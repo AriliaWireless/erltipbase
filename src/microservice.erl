@@ -1,6 +1,7 @@
 -module(microservice).
 -behaviour(gen_server).
 
+
 %% API.
 -export([start_link/0]).
 
@@ -14,7 +15,7 @@
 -export([creation_info/0]).
 
 -record(state, {
-	kafka_timer
+	kafka_timer :: timer:tref()
 }).
 
 %% API.
@@ -33,20 +34,30 @@ start_link() ->
 %% gen_server.
 
 init([]) ->
-	{ok, KafkaTimer } = timer:send_interval(10000, "local_"),
+	{ok, KafkaTimer } = timer:send_interval(10000, system_event_ping ),
 	{ok, #state{ kafka_timer = KafkaTimer}}.
 
 handle_call(_Request, _From, State) ->
+	io:format("handle_call"),
 	{reply, ignored, State}.
 
 handle_cast(_Msg, State) ->
+	io:format("handle_call: ~p", _Msg),
 	{noreply, State}.
+
+handle_info(system_event_ping, State) ->
+	io:format("system_event_ping"),
+	{noreply, State};
 
 handle_info(_Info, State) ->
+	io:format("handle_info"),
 	{noreply, State}.
 
-terminate(_Reason, _State) ->
+terminate(_Reason, State) ->
+	io:format("terminate"),
+	timer:cancel(State#state.kafka_timer),
 	ok.
 
 code_change(_OldVsn, State, _Extra) ->
+	io:format("handlcode_changee_call"),
 	{ok, State}.

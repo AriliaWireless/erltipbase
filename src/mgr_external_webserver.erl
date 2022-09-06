@@ -1,4 +1,4 @@
--module(websvr_mgr).
+-module(mgr_external_webserver).
 -behaviour(gen_server).
 
 %% API.
@@ -11,11 +11,19 @@
 -export([handle_info/2]).
 -export([terminate/2]).
 -export([code_change/3]).
+-export([creation_info/0]).
 
 -record(state, {
 }).
 
 %% API.
+creation_info() ->
+	[	#{	id => ?MODULE ,
+	       start => { ?MODULE , start_link, [] },
+	       restart => permanent,
+	       shutdown => 100,
+	       type => worker,
+	       modules => [?MODULE]} ].
 
 -spec start_link() -> {ok, pid()}.
 start_link() ->

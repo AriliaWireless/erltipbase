@@ -1,4 +1,4 @@
--module(microservice).
+-module(mgr_internal_webserver).
 -behaviour(gen_server).
 
 %% API.
@@ -14,7 +14,6 @@
 -export([creation_info/0]).
 
 -record(state, {
-	kafka_timer
 }).
 
 %% API.
@@ -33,8 +32,7 @@ start_link() ->
 %% gen_server.
 
 init([]) ->
-	{ok, KafkaTimer } = timer:send_interval(10000, "local_"),
-	{ok, #state{ kafka_timer = KafkaTimer}}.
+	{ok, #state{}}.
 
 handle_call(_Request, _From, State) ->
 	{reply, ignored, State}.

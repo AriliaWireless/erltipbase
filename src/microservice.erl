@@ -14,6 +14,8 @@
 -export([code_change/3]).
 -export([creation_info/0]).
 
+-export([add_service_info/1,delete_service_info/1]).
+
 -record(state, {
 		advertised = false ::boolean(),
 		kafka_timer :: timer:tref(),
@@ -23,7 +25,8 @@
 		private_end_point = <<>> ::binary(),
 		hash = <<>> ::binary(),
 		version = <<>> ::binary(),
-		data_dir :: binary()
+		data_dir :: binary(),
+		services = maps:new() ::map()
 }).
 
 %% API.
@@ -35,13 +38,11 @@ creation_info() ->
 	       type => worker,
 	       modules => [?MODULE]} ].
 
-%% Obj.set(KafkaTopics::ServiceEvents::Fields::EVENT,Type);
-%%	    Obj.set(KafkaTopics::ServiceEvents::Fields::ID,ID_);
-%%	    Obj.set(KafkaTopics::ServiceEvents::Fields::TYPE,Poco::toLower(DAEMON_APP_NAME));
-%%	    Obj.set(KafkaTopics::ServiceEvents::Fields::PUBLIC,MyPublicEndPoint_);
-%%	    Obj.set(KafkaTopics::ServiceEvents::Fields::PRIVATE,MyPrivateEndPoint_);
-%%	    Obj.set(KafkaTopics::ServiceEvents::Fields::KEY,MyHash_);
-%%	    Obj.set(KafkaTopics::ServiceEvents::Fields::VRSN,Version_);
+add_service_info(ServiceInfo) when is_map(ServiceInfo) ->
+	gen_server:call(?MODULE, { register_service, ServiceInfo}).
+
+delete_service_info(ServiceInfo) when is_map(ServiceInfo) ->
+	gen_server:call(?MODULE, { remove_service, ServiceInfo}).
 
 finish_system_message(Msg, State) when is_map(Msg) ->
 	Msg#{<<"id">> => State#state.id,
@@ -54,17 +55,16 @@ finish_system_message(Msg, State) when is_map(Msg) ->
 make_system_message(join, State) ->
 	finish_system_message(#{
 			<<"event">> => <<"join">>}, State);
-
 make_system_message(keep_alive, State) ->
 	finish_system_message(#{
       <<"event">> => <<"keep-alive">>}, State);
-make_system_message(leaave, State) ->
+make_system_message(leave, State) ->
 	finish_system_message(#{
       <<"event">> => <<"leave">>}, State).
 
 -spec start_link() -> {ok, pid()}.
 start_link() ->
-	gen_server:start_link(?MODULE, [], []).
+	gen_server:start_link({local,?MODULE}, ?MODULE, [], []).
 
 %% gen_server.
 
@@ -73,26 +73,46 @@ init([]) ->
 	{ok, PublicEndPoint } = application:get_env(restapi_external_uri),
 	{ok, KafkaTimer } = timer:send_interval(10000, system_event_ping ),
 	{ok, DataDir } = application:get_env(data_dir),
+	{ok, Version } = application:get_env(version),
+	Hash = utils:to_hex(crypto:hash(md5,integer_to_binary(registry:get(system_id)))),
 	{ok, #state{ kafka_timer = KafkaTimer,
 		private_end_point = InternalEndPoint,
 		public_end_point = PublicEndPoint,
-		data_dir = DataDir }}.
+		data_dir = DataDir,
+    app_name = <<"ow_erlhelloworld">>,
+		version = Version,
+		hash = Hash,
+		id = registry:get(system_id)}}.
 
-handle_call(_Request, _From, State) ->
-	io:format("handle_call"),
-	{reply, ignored, State}.
+handle_call({register_service,ServiceInfo}, _From, State) ->
+	case maps:find(<<"publicEndPoint">>, ServiceInfo) of
+		{ok,PublicName} ->
+			NewServices = maps:remove(PublicName, State#state.services),
+			NewServices2 = maps:put(PublicName,ServiceInfo,NewServices),
+			{reply,ok,State#state{ services = NewServices2}};
+		_ ->
+			{reply, ignored, State}
+	end;
+
+handle_call({remove_service,ServiceInfo}, _From, State) ->
+	case maps:find(<<"publicEndPoint">>, ServiceInfo) of
+		{ok,PublicName} ->
+			NewServices = maps:remove(PublicName, State#state.services),
+			{reply,ok,State#state{ services = NewServices}};
+		_ ->
+			{reply, ignored, State}
+	end.
 
 handle_cast(_Msg, State) ->
-	io:format("handle_call: ~p", _Msg),
+	io:format("handle_cast: ~p", _Msg),
 	{noreply, State}.
 
 handle_info(system_event_ping, State) ->
-	io:format("system_event_ping: ~p",[application:get_env(restapi_internal_port)]),
-	_Msg = case State#state.advertised of
+	Msg = case State#state.advertised of
 					false -> make_system_message(join, State);
 					true -> make_system_message(keep_alive, State)
 	      end,
-
+	io:format("Bus message: ~p~n",[Msg]),
 	{noreply, State#state{ advertised = true} };
 
 handle_info(_Info, State) ->

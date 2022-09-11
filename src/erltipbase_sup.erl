@@ -8,7 +8,9 @@ start_link() ->
 	supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-	Processes = microservice:creation_info() ++
+	Processes =
+		registry:creation_info() ++
+		microservice:creation_info() ++
 		mgr_external_webserver:creation_info() ++
 		mgr_internal_webserver:creation_info() ,
 	{ok, {{one_for_one, 1, 5}, Processes}}.

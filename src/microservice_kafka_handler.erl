@@ -40,7 +40,7 @@ start(_ClientId) ->
 
 handle_message(_Partition, Message, State) when is_record(Message,kafka_message) ->
 	Msg = jsone:decode(Message#kafka_message.value),
-	io:format("Message: ~p~n",[Msg]),
+	%% io:format("Message: ~p~n",[Msg]),
 	case maps:get(<<"event">>,Msg,<<"">>) of
 		<<"join">> ->
 			microservice:add_service_info(Msg);

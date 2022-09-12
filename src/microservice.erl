@@ -20,6 +20,7 @@
 -record(state, {
 		advertised = false ::boolean(),
 		kafka_timer :: timer:tref(),
+		service_timer_cleanup :: timer:tref(),
 		app_name = <<>> ::binary(),
 		id = 0 :: integer(),
 		public_end_point = <<>> ::binary(),
@@ -82,18 +83,20 @@ init([]) ->
 	{ok, InternalEndPoint } = application:get_env(restapi_internal_uri),
 	{ok, PublicEndPoint } = application:get_env(restapi_external_uri),
 	{ok, KafkaTimer } = timer:send_interval(10000, system_event_ping ),
+	{ok, ServiceCleanupTimer } = timer:send_interval(10000, cleanup_services ),
 	{ok, DataDir } = application:get_env(data_dir),
 	{ok, Version } = application:get_env(version),
 	Hash = utils:to_hex(crypto:hash(md5,integer_to_binary(registry:get(system_id)))),
 	ok = brod:start_producer(brod_client_1,<<"service_events">>,_ProducerConfig = []),
-	{ok, #state{ kafka_timer = KafkaTimer,
-		private_end_point = InternalEndPoint,
-		public_end_point = PublicEndPoint,
-		data_dir = DataDir,
-    app_name = <<"ow_erlhelloworld">>,
-		version = Version,
-		hash = Hash,
-		id = registry:get(system_id)}}.
+	{ok, #state{  kafka_timer = KafkaTimer,
+                service_timer_cleanup = ServiceCleanupTimer,
+								private_end_point = InternalEndPoint,
+								public_end_point = PublicEndPoint,
+								data_dir = DataDir,
+						    app_name = <<"ow_erlhelloworld">>,
+								version = Version,
+								hash = Hash,
+								id = registry:get(system_id)}}.
 
 handle_call(get_service_list, _From, State) ->
 	{ reply , { ok , State#state.services } , State };
@@ -116,7 +119,7 @@ handle_call({register_service,ServiceInfo}, _From, State) ->
 	case maps:find(<<"publicEndPoint">>, ServiceInfo) of
 		{ok,PublicName} ->
 			NewServices = maps:remove(PublicName, State#state.services),
-			NewServices2 = maps:put(PublicName,ServiceInfo,NewServices),
+			NewServices2 = maps:put(PublicName,ServiceInfo#{ <<"lastContact">> =>  os:system_time(second) },NewServices),
 			{reply,ok,State#state{ services = NewServices2}};
 		_ ->
 			{reply, ignored, State}
@@ -152,8 +155,19 @@ handle_info(system_event_ping, State) ->
 %%	io:format("Bus message: ~p~n",[M]),
 	{noreply, State#state{ advertised = true} };
 
-handle_info(_Info, State) ->
-	io:format("handle_info"),
+handle_info(cleanup_services, State) ->
+	F = fun( _Key, Value ) ->
+				case maps:find(<<"lastContact">>, Value) of
+					{ ok, LastContact } ->
+						30 > (os:system_time(second)-LastContact) ;
+					_ ->
+						false
+				end
+	    end,
+	{ noreply , State#state{ services = maps:filter(F,State#state.services) }};
+
+handle_info(Info, State) ->
+	io:format("handle_info: ~p~n",[Info]),
 	{noreply, State}.
 
 terminate(_Reason, State) ->

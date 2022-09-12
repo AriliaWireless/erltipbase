@@ -85,7 +85,7 @@ init([]) ->
 	{ok, DataDir } = application:get_env(data_dir),
 	{ok, Version } = application:get_env(version),
 	Hash = utils:to_hex(crypto:hash(md5,integer_to_binary(registry:get(system_id)))),
-	ok = brod:start_producer(brod_client_1,<<"service_events">>,_ProducerConfig = []),
+	ok = brod:start_producer(brod_client_2,<<"service_events">>,_ProducerConfig = []),
 	{ok, #state{ kafka_timer = KafkaTimer,
 		private_end_point = InternalEndPoint,
 		public_end_point = PublicEndPoint,

@@ -141,12 +141,13 @@ handle_info(system_event_ping, State) ->
 					true -> make_system_message(keep_alive, State)
 	      end,
 	M = jsone:encode(Msg),
-
-	brod:produce_sync(_Client    = brod_client_1,
-	                  _Topic     = <<"service_events">>,
-	                  _Partition = 0,
-	                  _Key       = State#state.public_end_point,
-	                  _Value     = M),
+	microservice_kafka_handler:send_message(<<"service_events">>,State#state.public_end_point, M ),
+%%
+%%	brod:produce_sync(_Client    = brod_client_1,
+%%	                  _Topic     = <<"service_events">>,
+%%	                  _Partition = 0,
+%%	                  _Key       = State#state.public_end_point,
+%%	                  _Value     = M),
 %%	io:format("Bus message: ~p~n",[Msg]),
 %%	io:format("Bus message: ~p~n",[M]),
 	{noreply, State#state{ advertised = true} };

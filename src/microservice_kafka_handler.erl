@@ -4,11 +4,19 @@
 -behaviour(brod_topic_subscriber).
 
 -export([start/1]).
--export([init/2, handle_message/4, handle_message/3]). %% callback api
+-export([init/2, handle_message/4, handle_message/3, send_message/3]). %% callback api
 
 -record(state, { offset_dir   :: string()
 	, message_type :: message | message_type
 }).
+
+
+send_message(Topic,Key,Payload) ->
+	brod:produce_sync(_Client    = brod_client_1,
+	                  _Topic     = Topic,
+	                  _Partition = 0,
+	                  _Key       = Key,
+	                  _Value     = Payload).
 
 init(_Topic, MessageType) ->
 	State = #state{
@@ -17,22 +25,18 @@ init(_Topic, MessageType) ->
 	{ok, [], State}.
 
 -spec start(brod:client_id()) -> {ok, pid()}.
-start(ClientId) ->
+start(_ClientId) ->
+	ClientId = ?MODULE,
 	Topic = <<"service_events">>,
-	GroupConfig = [ {offset_reset_policy, reset_to_earliest},
-	                {offset_commit_policy, commit_to_kafka_v2},
-	                {offset_commit_interval_seconds, 5}],
-	GroupId = <<"ow_erlhelloworld">>,
-	ConsumerConfig = [{begin_offset, earliest}],
-%%	GroupConfig = [{offset_reset_policy, reset_to_earliest}],
-	brod:start_link_group_subscriber(ClientId, GroupId, [Topic],
-	                                 GroupConfig, ConsumerConfig,
-	                                 _CallbackModule  = ?MODULE,
-	                                 _CallbackInitArg = []).
-%%	brod_topic_subscriber:start_link(ClientId, Topic, all,
-%%	                                 ConsumerConfig, message,
-%%	                                 ?MODULE,
-%%                                 []).
+	%% ConsumerConfig = [{begin_offset, earliest}],
+	BootstrapHosts = [{"main.arilia.com",9093}],
+	ok = brod:start_client(BootstrapHosts, ClientId, [{query_api_versions, false}]),
+	ok = brod:start_producer(ClientId, Topic, _ProducerConfig = []),
+	ConsumerConfig = [{offset_reset_policy, reset_to_earliest}],
+	brod_topic_subscriber:start_link(ClientId, Topic, all,
+	                                 ConsumerConfig, message,
+	                                 _CallbackModule = ?MODULE,
+	                                 message).
 
 handle_message(_Partition, Message, State) when is_record(Message,kafka_message) ->
 	Msg = jsone:decode(Message#kafka_message.value),

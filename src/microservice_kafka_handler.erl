@@ -18,10 +18,8 @@ init(_Topic, MessageType) ->
 
 -spec start(brod:client_id()) -> {ok, pid()}.
 start(ClientId) ->
-	KafkaBootstrapEndpoints = [{"main.arilia.com", 9093}],
 	Topic = <<"service_events">>,
 	Config = [{offset_reset_policy, reset_to_earliest}],
-	ok = brod:start_client(KafkaBootstrapEndpoints, client1),
 	brod_topic_subscriber:start_link(ClientId, Topic, all,
 	                                 Config, message,
 	                                 ?MODULE,

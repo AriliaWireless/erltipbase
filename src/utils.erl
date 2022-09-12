@@ -1,5 +1,6 @@
 -module(utils).
--export([to_hex/1]).
+
+-export([to_hex/1,get_first/1]).
 
 to_hex_digit(D) ->
 	case D>9 of
@@ -18,6 +19,11 @@ to_hex(<<N1:4,N2:4,Rest/binary>>,Acc) ->
 	D1 = to_hex_digit(N1),
 	D2 = to_hex_digit(N2),
 	to_hex(Rest,<<Acc/binary,D1:8,D2:8>>).
+
+get_first(M) when is_map(M) ->
+	I = maps:iterator(M),
+	{ _, V, _} = maps:next(I),
+	V.
 
 
 

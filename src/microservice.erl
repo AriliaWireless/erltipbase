@@ -14,7 +14,8 @@
 -export([code_change/3]).
 -export([creation_info/0]).
 
--export([add_service_info/1,delete_service_info/1]).
+-export([add_service_info/1,delete_service_info/1,get_service_info/1,get_service_list/0,
+	get_my_service_info/0]).
 
 -record(state, {
 		advertised = false ::boolean(),
@@ -37,6 +38,15 @@ creation_info() ->
 	       shutdown => 100,
 	       type => worker,
 	       modules => [?MODULE]} ].
+
+get_service_list() ->
+	gen_server:call(?MODULE, get_service_list).
+
+get_service_info(ServiceType) when is_binary(ServiceType) ->
+	gen_server:call(?MODULE, { get_service, ServiceType}).
+
+get_my_service_info() ->
+	gen_server:call(?MODULE, get_my_service_info).
 
 add_service_info(ServiceInfo) when is_map(ServiceInfo) ->
 	gen_server:call(?MODULE, { register_service, ServiceInfo}).
@@ -75,6 +85,7 @@ init([]) ->
 	{ok, DataDir } = application:get_env(data_dir),
 	{ok, Version } = application:get_env(version),
 	Hash = utils:to_hex(crypto:hash(md5,integer_to_binary(registry:get(system_id)))),
+	ok = brod:start_producer(brod_client_1,<<"service_events">>,_ProducerConfig = []),
 	{ok, #state{ kafka_timer = KafkaTimer,
 		private_end_point = InternalEndPoint,
 		public_end_point = PublicEndPoint,
@@ -83,6 +94,23 @@ init([]) ->
 		version = Version,
 		hash = Hash,
 		id = registry:get(system_id)}}.
+
+handle_call(get_service_list, _From, State) ->
+	{ reply , { ok , State#state.services } , State };
+
+handle_call(get_my_service_info, _From, State) ->
+	{ reply , { ok , finish_system_message(maps:new(), State) }, State };
+
+handle_call({get_service,ServiceType}, _From, State) ->
+	F = fun( _Key, Value ) ->
+				case maps:find(<<"type">>, Value) of
+					{ ok, Type } ->
+						Type == ServiceType ;
+					_ ->
+						false
+				end
+		end,
+	{ reply , { ok , maps:filter(F,State#state.services) }, State };
 
 handle_call({register_service,ServiceInfo}, _From, State) ->
 	case maps:find(<<"publicEndPoint">>, ServiceInfo) of
@@ -112,7 +140,15 @@ handle_info(system_event_ping, State) ->
 					false -> make_system_message(join, State);
 					true -> make_system_message(keep_alive, State)
 	      end,
-	io:format("Bus message: ~p~n",[Msg]),
+	M = jsone:encode(Msg),
+
+	brod:produce_sync(_Client    = brod_client_1,
+	                  _Topic     = <<"service_events">>,
+	                  _Partition = 0,
+	                  _Key       = State#state.public_end_point,
+	                  _Value     = M),
+%%	io:format("Bus message: ~p~n",[Msg]),
+%%	io:format("Bus message: ~p~n",[M]),
 	{noreply, State#state{ advertised = true} };
 
 handle_info(_Info, State) ->

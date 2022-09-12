@@ -142,7 +142,7 @@ handle_info(system_event_ping, State) ->
 	      end,
 	M = jsone:encode(Msg),
 
-	brod:produce_sync(_Client    = brod_client_1,
+	brod:produce_sync(_Client    = brod_client_2,
 	                  _Topic     = <<"service_events">>,
 	                  _Partition = 0,
 	                  _Key       = State#state.public_end_point,

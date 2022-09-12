@@ -1,7 +1,7 @@
 -module(microservice_kafka_handler).
--behaviour(brod_topic_subscriber).
-
 -include_lib("brod/include/brod.hrl"). %% needed for the #kafka_message record definition
+
+-behaviour(brod_topic_subscriber).
 
 -export([start/1]).
 -export([init/2, handle_message/4, handle_message/3]). %% callback api
@@ -19,10 +19,9 @@ init(_Topic, MessageType) ->
 -spec start(brod:client_id()) -> {ok, pid()}.
 start(ClientId) ->
 	Topic = <<"service_events">>,
-	GroupConfig = [{offset_reset_policy, reset_to_earliest},
+	GroupConfig = [ {offset_reset_policy, reset_to_earliest},
 	                {offset_commit_policy, commit_to_kafka_v2},
-	               {offset_commit_interval_seconds, 5}
-	],
+	                {offset_commit_interval_seconds, 5}],
 	GroupId = <<"ow_erlhelloworld">>,
 	ConsumerConfig = [{begin_offset, earliest}],
 %%	GroupConfig = [{offset_reset_policy, reset_to_earliest}],

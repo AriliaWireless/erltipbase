@@ -19,20 +19,21 @@ init(_Topic, MessageType) ->
 -spec start(brod:client_id()) -> {ok, pid()}.
 start(ClientId) ->
 	Topic = <<"service_events">>,
-	_GroupConfig = [{offset_commit_policy, commit_to_kafka_v2},
+	GroupConfig = [{offset_reset_policy, reset_to_earliest},
+	                {offset_commit_policy, commit_to_kafka_v2},
 	               {offset_commit_interval_seconds, 5}
 	],
-	_GroupId = <<"my-unique-group-id-shared-by-all-members">>,
+	GroupId = <<"ow_erlhelloworld">>,
 	ConsumerConfig = [{begin_offset, earliest}],
-%%	brod:start_link_group_subscriber(ClientId, GroupId, [Topic],
-%%	                                 GroupConfig, ConsumerConfig,
-%%	                                 _CallbackModule  = ?MODULE,
-%%	                                 _CallbackInitArg = []).
-%%	Config = [{offset_reset_policy, reset_to_earliest}],
-	brod_topic_subscriber:start_link(ClientId, Topic, all,
-	                                 ConsumerConfig, message,
-	                                 ?MODULE,
-                                 []).
+%%	GroupConfig = [{offset_reset_policy, reset_to_earliest}],
+	brod:start_link_group_subscriber(ClientId, GroupId, [Topic],
+	                                 GroupConfig, ConsumerConfig,
+	                                 _CallbackModule  = ?MODULE,
+	                                 _CallbackInitArg = []).
+%%	brod_topic_subscriber:start_link(ClientId, Topic, all,
+%%	                                 ConsumerConfig, message,
+%%	                                 ?MODULE,
+%%                                 []).
 
 handle_message(_Partition, Message, State) when is_record(Message,kafka_message) ->
 	Msg = jsone:decode(Message#kafka_message.value),

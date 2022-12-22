@@ -9,8 +9,9 @@ start(_Type, _Args) ->
 	erltipbase_sup:start_link().
 
 start() ->
-	io:format("hello"),
+	application:start(inets),
 	application:ensure_all_started(erltipbase),
+	microservice_kafka_handler:start(openwifi),
 	erltipbase_sup:start_link().
 
 stop(_State) ->

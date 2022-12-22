@@ -12,7 +12,7 @@
 
 
 send_message(Topic,Key,Payload) ->
-	brod:produce_sync(_Client    = brod_client_1,
+	brod:produce_sync(_Client    = openwifi,
 	                  _Topic     = Topic,
 	                  _Partition = 0,
 	                  _Key       = Key,
@@ -29,7 +29,7 @@ start(_ClientId) ->
 	ClientId = ?MODULE,
 	Topic = <<"service_events">>,
 	%% ConsumerConfig = [{begin_offset, earliest}],
-	BootstrapHosts = [{"main.arilia.com",9093}],
+	BootstrapHosts = [{"debfarm1-node-a",9093}],
 	ok = brod:start_client(BootstrapHosts, ClientId, [{query_api_versions, false}]),
 	ok = brod:start_producer(ClientId, Topic, _ProducerConfig = []),
 	ConsumerConfig = [{offset_reset_policy, reset_to_earliest}],
@@ -40,7 +40,7 @@ start(_ClientId) ->
 
 handle_message(_Partition, Message, State) when is_record(Message,kafka_message) ->
 	Msg = jsone:decode(Message#kafka_message.value),
-	%% io:format("Message: ~p~n",[Msg]),
+	io:format("Message: ~p~n",[Msg]),
 	case maps:get(<<"event">>,Msg,<<"">>) of
 		<<"join">> ->
 			microservice:add_service_info(Msg);

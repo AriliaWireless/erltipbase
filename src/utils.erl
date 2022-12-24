@@ -1,6 +1,6 @@
 -module(utils).
 
--export([to_hex/1,get_first/1]).
+-export([to_hex/1,get_first/1, set_app_name/1, get_app_name/0]).
 
 to_hex_digit(D) ->
 	case D>9 of
@@ -25,6 +25,13 @@ get_first(M) when is_map(M) ->
 	{ _, V, _} = maps:next(I),
 	V.
 
+-spec set_app_name( Name::atom() ) -> ok.
+set_app_name(AppName) ->
+	persistent_term:put(running_app,AppName).
+
+-spec get_app_name() -> Name::atom().
+get_app_name() ->
+	persistent_term:get(running_app).
 
 
 

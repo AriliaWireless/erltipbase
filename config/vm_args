@@ -1,5 +1,5 @@
 ## Name of the node
--name tipbase@renegademac.arilia.com
+-name tipbase@Mac-Studio.arilia.com
 -setcookie oreo
 -boot start_clean
 -s erltipbase_app

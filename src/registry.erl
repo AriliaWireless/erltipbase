@@ -44,6 +44,7 @@ put( Key, Value ) ->
 	gen_server:call(?MODULE, {put, Key, Value}).
 
 init([]) ->
+	process_flag(trap_exit, true),
 	{ok, DataDir } = application:get_env(data_dir),
 	FileName =binary:bin_to_list(DataDir) ++ "/registry",
 	case filelib:is_file(FileName) of

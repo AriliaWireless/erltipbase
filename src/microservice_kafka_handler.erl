@@ -4,15 +4,23 @@
 -behaviour(brod_topic_subscriber).
 
 -export([start/1]).
--export([init/2, handle_message/4, handle_message/3, send_message/3]). %% callback api
+-export([init/2, handle_message/4, handle_message/3, send_message/3, creation_info/0]). %% callback api
 
--record(state, { offset_dir   :: string()
-	, message_type :: message | message_type
+-record(state, {
+	  offset_dir   :: string(),
+		message_type :: message | message_type
 }).
 
+creation_info() ->
+	[	#{	id => ?MODULE ,
+	       start => { ?MODULE , start, [openwifi] },
+	       restart => permanent,
+	       shutdown => 100,
+	       type => worker,
+	       modules => [?MODULE]} ].
 
 send_message(Topic,Key,Payload) ->
-	brod:produce_sync(_Client    = openwifi,
+	brod:produce_sync(_Client    = ?MODULE,
 	                  _Topic     = Topic,
 	                  _Partition = 0,
 	                  _Key       = Key,
@@ -29,7 +37,9 @@ start(_ClientId) ->
 	ClientId = ?MODULE,
 	Topic = <<"service_events">>,
 	%% ConsumerConfig = [{begin_offset, earliest}],
-	BootstrapHosts = [{"debfarm1-node-a",9093}],
+	{ok,Clients} = application:get_env(brod,clients),
+	OWConfig = proplists:get_value(openwifi, Clients),
+	BootstrapHosts = proplists:get_value(endpoints, OWConfig),
 	ok = brod:start_client(BootstrapHosts, ClientId, [{query_api_versions, false}]),
 	ok = brod:start_producer(ClientId, Topic, _ProducerConfig = []),
 	ConsumerConfig = [{offset_reset_policy, reset_to_earliest}],

@@ -1,6 +1,7 @@
 -module(utils).
 
--export([to_hex/1,get_first/1, set_app_name/1, get_app_name/0]).
+-export([to_hex/1,get_first/1, set_app_name/1, get_app_name/0, add_cors/2]).
+-export([number_of_cpus/0]).
 
 to_hex_digit(D) ->
 	case D>9 of
@@ -33,5 +34,14 @@ set_app_name(AppName) ->
 get_app_name() ->
 	persistent_term:get(running_app).
 
+-spec number_of_cpus() -> integer().
+number_of_cpus() ->
+	length(cpu_sup:util([detailed,per_cpu])).
 
-
+add_cors(Req0, Methods) ->
+	Req1 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Methods">>, Methods, Req0),
+	Req2 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Origin">>, <<"*">>, Req1),
+	Req3 = cowboy_req:set_resp_header(<<"Pragma">>, <<"no-cache">>, Req2),
+	Req4 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Credentials">>, <<"true">>, Req3),
+	Req5 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Headers">>, <<"*">>, Req4),
+	cowboy_req:set_resp_header(<<"Vary">>, <<"Origin, Accept-Encoding">>, Req5).

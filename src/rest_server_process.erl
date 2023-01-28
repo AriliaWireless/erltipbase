@@ -11,6 +11,7 @@
 
 -behaviour(gen_server).
 
+-define(RESTAPI_SERVER_NAME,restapi_server).
 %% API
 -export([start_link/0]).
 
@@ -53,15 +54,14 @@ init([]) ->
 	URI = uri_string:parse(U1),
 	Port = maps:get(port,URI),
 	Dispatch = cowboy_router:compile([
-				                                 {'_', [{"/api/v1/system", restapi_system_command, []}]}
+				                                 {'_', [{"/api/v1/system", restapi_system_command, [ test ]}]}
 			                                 ]),
 	{ok, Pid} = case application:get_env(utils:get_app_name(),restapi_external_secure,true) of
 							true ->
 								{ok, CertFile} = application:get_env(utils:get_app_name(),restapi_external_cert),
 								{ok, KeyFile} = application:get_env(utils:get_app_name(),restapi_external_key),
 								Password = application:get_env(utils:get_app_name(),restapi_external_key_password,""),
-								io:format("~n~n~p ~p ~p~n~n",[ CertFile, KeyFile, Password]),
-								cowboy:start_tls(restapi_server, [
+								cowboy:start_tls(?RESTAPI_SERVER_NAME, [
 									{port, Port},
 									{certfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ CertFile},
 									{keyfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ KeyFile},
@@ -70,10 +70,12 @@ init([]) ->
 									                 env => #{dispatch => Dispatch}
 								                 });
 							false ->
-								cowboy:start_clear(restapi_server,
+								cowboy:start_clear(?RESTAPI_SERVER_NAME,
 								                   [{port, Port}],
 								                   #{env => #{dispatch => Dispatch}})
 	end,
+	process_flag(trap_exit, true),
+	%% io:format("WebServer: ~p~n",[Pid]),
 	{ok, #rest_server_process_state{ listener_pid = Pid}}.
 
 %% @private
@@ -115,6 +117,7 @@ handle_info(_Info, State = #rest_server_process_state{}) ->
 -spec(terminate(Reason :: (normal | shutdown | {shutdown, term()} | term()),
                 State :: #rest_server_process_state{}) -> term()).
 terminate(_Reason, _State = #rest_server_process_state{}) ->
+	cowboy:stop_listener(?RESTAPI_SERVER_NAME),
 	ok.
 
 %% @private

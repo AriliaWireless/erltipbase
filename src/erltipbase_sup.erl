@@ -10,6 +10,7 @@ start_link() ->
 init([]) ->
 	Processes =
 		registry:creation_info() ++
+		microservice_kafka_handler:creation_info() ++
 		microservice:creation_info() ++
 		mgr_external_webserver:creation_info() ++
 		mgr_internal_webserver:creation_info() ++

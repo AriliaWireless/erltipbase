@@ -87,7 +87,9 @@ init([]) ->
 	{ok, DataDir } = application:get_env(data_dir),
 	{ok, Version } = application:get_env(version),
 	Hash = utils:to_hex(crypto:hash(md5,integer_to_binary(registry:get(system_id)))),
-	ok = brod:start_producer(openwifi,<<"service_events">>,_ProducerConfig = []),
+	process_flag(trap_exit, true),
+	persistent_term:put(microservice_version, Version),
+	persistent_term:put(microservice_start_time, os:system_time()),
 	{ok, #state{  kafka_timer = KafkaTimer,
                 service_timer_cleanup = ServiceCleanupTimer,
 								private_end_point = InternalEndPoint,
@@ -144,6 +146,7 @@ handle_info(system_event_ping, State) ->
 					true -> make_system_message(keep_alive, State)
 	      end,
 	M = jsone:encode(Msg),
+	%% io:format("Sending ~p~n",[M]),
 	microservice_kafka_handler:send_message(<<"service_events">>,State#state.public_end_point, M ),
 %%
 %%	brod:produce_sync(_Client    = brod_client_1,
@@ -172,8 +175,9 @@ handle_info(Info, State) ->
 
 terminate(_Reason, State) ->
 	timer:cancel(State#state.kafka_timer),
-	io:format("terminate"),
-	_Msg = make_system_message(leave,State),
+	Msg = make_system_message(leave,State),
+	M = jsone:encode(Msg),
+	microservice_kafka_handler:send_message(<<"service_events">>,State#state.public_end_point, M ),
 	ok.
 
 code_change(_OldVsn, State, _Extra) ->

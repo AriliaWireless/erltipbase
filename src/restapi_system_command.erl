@@ -71,9 +71,27 @@ content_types_provided(Req, State) ->
 	{[{{<<"application">>, <<"json">>, '*'}, to_json}], Req, State}.
 
 -spec from_json(Req :: request_data(), State :: request_state()) -> request_answer().
-from_json(Req, #call_state{method = <<"GET">>} = _State) ->
-	io:format("From JSON..."),
-	cowboy_req:reply(400, #{}, <<"Missing echo parameter.">>, Req);
+from_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
+	io:format("to_json called info: ~p~n",[Req]),
+	Answer = #{ hostname => node(),
+	            uptime =>  State#call_state.session_time - persistent_term:get(microservice_start_time),
+	            start => persistent_term:get(microservice_start_time),
+	            processors => utils:number_of_cpus()
+	},
+	{ jsone:encode(Answer), Req, State};
+from_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
+	io:format("to_json called 2: ~p~n",[Req]),
+	Answer = #{
+		version => <<"1.0">>,
+		hostname => list_to_binary(net_adm:localhost()),
+		uptime =>  (State#call_state.session_time - persistent_term:get(microservice_start_time))/1000000,
+		start => persistent_term:get(microservice_start_time)/1000000,
+		processors => utils:number_of_cpus(),
+		certificates => [],
+		os => <<"Erlang 25.2">>,
+		erlangnode => node()
+	},
+	{ jsone:encode(Answer), Req, State};
 from_json(Req, #call_state{method = <<"POST">>} = State) ->
 	{ok, Req, State};
 from_json(Req, #call_state{method = <<"PUT">>} = State) ->

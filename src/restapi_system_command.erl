@@ -29,7 +29,7 @@
          content_types_provided/2, is_conflict/2, valid_content_headers/2, delete_completed/2, delete_resource/2, expires/2,
          previously_existed/2, resource_exists/2, is_authorized/2, forbidden/2, generate_etag/2, known_methods/2, languages_provided/2,
          last_modified/2, malformed_request/2, moved_permanently/2, moved_temporarily/2,
-%%         options/2,
+         options/2,
          multiple_choices/2, rate_limited/2,
          service_available/2, uri_too_long/2, valid_entity_length/2,
          variances/2,
@@ -212,12 +212,11 @@ moved_temporarily(Req, State) ->
 multiple_choices(Req, State) ->
 	{false, Req, State}.
 
-%%-spec options(Req :: request_data(), State :: request_state()) -> request_answer().
-%%options(Req, State) ->
-%%	Req1 = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
-%%	Req2 = cowboy_req:reply(200,#{},Req1),
-%%	io:format("Doing options (2): ~p~n",[Req2]),
-%%	{ok, Req2, State}.
+-spec options(Req :: request_data(), State :: request_state()) -> request_answer().
+options(Req, State) ->
+	Req1 = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
+	io:format("Doing options (2): ~p~n",[Req1]),
+	{ok, Req1, State}.
 
 -spec previously_existed(Req :: request_data(), State :: request_state()) -> request_answer().
 previously_existed(Req, State) ->

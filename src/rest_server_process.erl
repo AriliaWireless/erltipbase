@@ -65,8 +65,7 @@ init([]) ->
 									{port, Port},
 									{certfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ CertFile},
 									{keyfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ KeyFile},
-									{password,Password},
-									{chunked,true}
+									{password,Password}
 								], #{
 									                 env => #{dispatch => Dispatch}
 								                 });

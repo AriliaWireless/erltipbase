@@ -196,9 +196,10 @@ multiple_choices(Req, State) ->
 
 -spec options(Req :: request_data(), State :: request_state()) -> request_answer().
 options(Req, State) ->
-	NewReq = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
-	io:format("Doing options: ~p~n",[NewReq]),
-	{ok, NewReq, State}.
+	Req1 = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
+	Req2 = cowboy_req:reply(200,#{},<<>>,Req1),
+	io:format("Doing options: ~p~n",[Req2]),
+	{ok, Req2, State}.
 
 -spec previously_existed(Req :: request_data(), State :: request_state()) -> request_answer().
 previously_existed(Req, State) ->

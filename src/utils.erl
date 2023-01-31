@@ -39,9 +39,9 @@ number_of_cpus() ->
 	length(cpu_sup:util([detailed,per_cpu])).
 
 add_cors(Req0, Methods) ->
-	Req1 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Methods">>, Methods, Req0),
-	Req2 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Origin">>, <<"*">>, Req1),
-	Req3 = cowboy_req:set_resp_header(<<"Pragma">>, <<"no-cache">>, Req2),
-	Req4 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Credentials">>, <<"true">>, Req3),
-	Req5 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Headers">>, <<"*">>, Req4),
-	cowboy_req:set_resp_header(<<"Vary">>, <<"Origin, Accept-Encoding">>, Req5).
+	Req1 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Credentials">>, <<"true">>, Req0),
+	Req2 = cowboy_req:set_resp_header(<<"Access-Control-Request-Headers">>, <<"authorization,content-type">>, Req1),
+	Req3 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Origin">>, <<"*">>, Req2),
+	Req4 = cowboy_req:set_resp_header(<<"Vary">>, <<"Origin, Accept-Encoding">>, Req3),
+	Req5 = cowboy_req:set_resp_header(<<"Access-Control-Allow-Methods">>, Methods, Req4),
+	cowboy_req:set_resp_header(<<"Access-Control-Max-Age">>, <<"20">>, Req5).

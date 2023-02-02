@@ -44,7 +44,7 @@ init(Req, _State) ->
 		command = proplists:get_value(<<"command">>,QS,<<>>)
 	},
 	io:format("State->~p~n",[NewState]),
-	{cowboy_rest, Req, NewState}.
+	{cowboy_rest, utils:add_cors(Req,<<"GET, POST, OPTIONS">>), NewState}.
 
 -spec terminate(Reason :: any(), Req :: request_data(), any()) -> ok.
 terminate(_Reason, _Req, _State) ->
@@ -116,7 +116,7 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 		start => persistent_term:get(microservice_start_time),
 		processors => utils:number_of_cpus()
 		},
-	{ jsone:encode(Answer), utils:add_cors(Req,<<"GET, POST, OPTIONS">>), State};
+	{ jsone:encode(Answer), Req, State};
 to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
 	io:format("to_json called GET 2: ~n"),
 	Answer = #{
@@ -216,9 +216,9 @@ multiple_choices(Req, State) ->
 
 -spec options(Req :: request_data(), State :: request_state()) -> request_answer().
 options(Req, State) ->
-	Req1 = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
+%%	Req1 = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
 	%% io:format("Doing options (2): ~p~n",[Req1]),
-	{ok, Req1, State}.
+	{ok, Req, State}.
 
 -spec previously_existed(Req :: request_data(), State :: request_state()) -> request_answer().
 previously_existed(Req, State) ->

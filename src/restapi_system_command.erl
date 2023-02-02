@@ -80,7 +80,7 @@ from_json(Req, #call_state{method = <<"POST">>} = State) ->
 	io:format("from_json called POST: ~n"),
 	{Status,NewReq} = case cowboy_req:read_body(Req) of
 		{ok,Body,Req} ->
-			ParsedBody = jsone:decode(Body),
+			{ok,ParsedBody} = jsone:decode(Body),
 			case maps:get(<<"command">>, ParsedBody, undefined) of
 				undefined ->
 					restlib:bad_request(Req, { 1001, <<"Missing command">>, <<"Command should be systemlogs, subsystems">>});

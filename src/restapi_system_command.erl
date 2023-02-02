@@ -116,7 +116,7 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 		start => persistent_term:get(microservice_start_time),
 		processors => utils:number_of_cpus()
 		},
-	{ jsone:encode(Answer), Req, State};
+	{ jsone:encode(Answer), utils:add_cors(Req,<<"GET, POST, OPTIONS">>), State};
 to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
 	io:format("to_json called GET 2: ~n"),
 	Answer = #{

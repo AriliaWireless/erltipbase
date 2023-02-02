@@ -15,7 +15,7 @@
 -record(call_state, {
 	method = <<>> :: binary(),
 	token = <<>> :: binary(),
-	session_time = os:system_time(),
+	session_time = os:system_time(second),
 	caller_id = <<>> :: binary(),
 	command = <<>> :: binary() }
 ).
@@ -98,8 +98,8 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 	Answer = #{
 		version => <<"1.0">>,
 		hostname => list_to_binary(net_adm:localhost()),
-		uptime =>  (State#call_state.session_time - persistent_term:get(microservice_start_time))/1000000,
-		start => persistent_term:get(microservice_start_time)/1000000,
+		uptime =>  State#call_state.session_time - persistent_term:get(microservice_start_time),
+		start => persistent_term:get(microservice_start_time),
 		processors => utils:number_of_cpus(),
 		certificates => [],
 		os => <<"Erlang 25.2">>,

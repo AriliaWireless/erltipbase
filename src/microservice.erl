@@ -89,7 +89,7 @@ init([]) ->
 	Hash = utils:to_hex(crypto:hash(md5,integer_to_binary(registry:get(system_id)))),
 	process_flag(trap_exit, true),
 	persistent_term:put(microservice_version, Version),
-	persistent_term:put(microservice_start_time, os:system_time()),
+	persistent_term:put(microservice_start_time, os:system_time(second)),
 	{ok, #state{  kafka_timer = KafkaTimer,
                 service_timer_cleanup = ServiceCleanupTimer,
 								private_end_point = InternalEndPoint,

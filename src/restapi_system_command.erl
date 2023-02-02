@@ -38,12 +38,12 @@
 -spec init(Req :: request_data(), any()) -> request_answer().
 init(Req, _State) ->
 	QS = cowboy_req:parse_qs(Req),
-	io:format("System info page: QUERY=~p~n",[QS]),
+	%% io:format("System info page: QUERY=~p~n",[QS]),
 	NewState = #call_state{
 		method = cowboy_req:method(Req),
 		command = proplists:get_value(<<"command">>,QS,<<>>)
 	},
-	io:format("State->~p~n",[NewState]),
+	%% io:format("State->~p~n",[NewState]),
 	{cowboy_rest, utils:add_cors(Req,<<"GET, POST, OPTIONS">>), NewState}.
 
 -spec terminate(Reason :: any(), Req :: request_data(), any()) -> ok.
@@ -74,10 +74,10 @@ content_types_provided(Req, State) ->
 from_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 	{ ok, Req, State};
 from_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
-	io:format("to_json called 2: ~p~n",[Req]),
+	%% io:format("to_json called 2: ~p~n",[Req]),
 	{ ok, Req, State};
 from_json(Req, #call_state{method = <<"POST">>} = State) ->
-	io:format("from_json called POST: ~n"),
+	%% io:format("from_json called POST: ~n"),
 	{Status,NewReq} = case cowboy_req:read_body(Req) of
 		{ok,Body,Req1} ->
 			ParsedBody = jsone:decode(Body),
@@ -114,7 +114,7 @@ from_json(Req, State) ->
 
 -spec to_json(Req :: request_data(), State :: request_state()) -> request_answer().
 to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
-	io:format("to_json called GET info:~n"),
+	%% io:format("to_json called GET info:~n"),
 	Answer = #{
 		version => <<"1.0">>,
 		hostname => list_to_binary(net_adm:localhost()),

@@ -109,7 +109,7 @@ from_json(Req, State) ->
 
 -spec to_json(Req :: request_data(), State :: request_state()) -> request_answer().
 to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
-	io:format("to_json called info: ~p~n",[Req]),
+	io:format("to_json called GET info: ~p~n",[Req]),
 	Answer = #{ hostname => node(),
 		uptime =>  State#call_state.session_time - persistent_term:get(microservice_start_time),
 		start => persistent_term:get(microservice_start_time),
@@ -117,7 +117,7 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 		},
 	{ jsone:encode(Answer), Req, State};
 to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
-	io:format("to_json called 2: ~p~n",[Req]),
+	io:format("to_json called GET 2: ~p~n",[Req]),
 	Answer = #{
 		version => <<"1.0">>,
 		hostname => list_to_binary(net_adm:localhost()),
@@ -130,6 +130,7 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
 	},
 	{ jsone:encode(Answer), Req, State};
 to_json(Req, #call_state{method = <<"POST">>} = State) ->
+	io:format("to_json called POST: ~p~n",[Req]),
 	{ok, Req, State};
 to_json(Req, #call_state{method = <<"PUT">>} = State) ->
 	{ok, Req, State};
@@ -215,7 +216,7 @@ multiple_choices(Req, State) ->
 -spec options(Req :: request_data(), State :: request_state()) -> request_answer().
 options(Req, State) ->
 	Req1 = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
-	io:format("Doing options (2): ~p~n",[Req1]),
+	%% io:format("Doing options (2): ~p~n",[Req1]),
 	{ok, Req1, State}.
 
 -spec previously_existed(Req :: request_data(), State :: request_state()) -> request_answer().

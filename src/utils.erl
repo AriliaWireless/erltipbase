@@ -41,7 +41,7 @@ number_of_cpus() ->
 add_cors(Req0, Methods) ->
 	Origin = cowboy_req:header(<<"origin">>, Req0,<<"*">>),
 	Req1 = cowboy_req:set_resp_header(<<"access-control-allow-credentials">>, <<"true">>, Req0),
-	Req2 = cowboy_req:set_resp_header(<<"access-control-allow-headers">>, <<"Authorization, content-type, X-PINGOTHER">>, Req1),
+	Req2 = cowboy_req:set_resp_header(<<"access-control-allow-headers">>, <<"authorization, content-type, X-PINGOTHER">>, Req1),
 	Req3 = cowboy_req:set_resp_header(<<"access-control-allow-origin">>, Origin, Req2),
 	Req4 = cowboy_req:set_resp_header(<<"vary">>, <<"origin, accept-encoding">>, Req3),
 	Req5 = cowboy_req:set_resp_header(<<"access-control-allow-methods">>, Methods, Req4),

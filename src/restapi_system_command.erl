@@ -72,18 +72,7 @@ content_types_provided(Req, State) ->
 
 -spec from_json(Req :: request_data(), State :: request_state()) -> request_answer().
 from_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
-	io:format("to_json called info: ~p~n",[Req]),
-	Answer = #{
-		version => <<"1.0">>,
-		hostname => list_to_binary(net_adm:localhost()),
-		uptime =>  (State#call_state.session_time - persistent_term:get(microservice_start_time))/1000000,
-		start => persistent_term:get(microservice_start_time)/1000000,
-		processors => utils:number_of_cpus(),
-		certificates => [],
-		os => <<"Erlang 25.2">>,
-		erlangnode => node()
-	},
-	{ jsone:encode(Answer), Req, State};
+	{ ok, Req, State};
 from_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
 	io:format("to_json called 2: ~p~n",[Req]),
 	{ ok, Req, State};
@@ -106,25 +95,19 @@ from_json(Req, State) ->
 -spec to_json(Req :: request_data(), State :: request_state()) -> request_answer().
 to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 	io:format("to_json called GET info:~n"),
-	Answer = #{ hostname => node(),
-		uptime =>  State#call_state.session_time - persistent_term:get(microservice_start_time),
-		start => persistent_term:get(microservice_start_time),
-		processors => utils:number_of_cpus()
-		},
-	{ jsone:encode(Answer), Req, State};
-to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
-	io:format("to_json called GET 2: ~n"),
 	Answer = #{
 		version => <<"1.0">>,
 		hostname => list_to_binary(net_adm:localhost()),
-    uptime =>  (State#call_state.session_time - persistent_term:get(microservice_start_time))/1000000,
-    start => persistent_term:get(microservice_start_time)/1000000,
-    processors => utils:number_of_cpus(),
+		uptime =>  (State#call_state.session_time - persistent_term:get(microservice_start_time))/1000000,
+		start => persistent_term:get(microservice_start_time)/1000000,
+		processors => utils:number_of_cpus(),
 		certificates => [],
 		os => <<"Erlang 25.2">>,
 		erlangnode => node()
 	},
-	{ jsone:encode(Answer), Req, State};
+	{jsone:encode(Answer), Req, State};
+to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
+	{ok, Req, State};
 to_json(Req, #call_state{method = <<"POST">>} = State) ->
 	io:format("to_json called POST: ~n"),
 	{ok, Req, State};

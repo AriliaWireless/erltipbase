@@ -44,6 +44,6 @@ add_cors(Req0, Methods) ->
 	Req2 = cowboy_req:set_resp_header(<<"access-control-request-headers">>, <<"*">>, Req1),
 	Req3 = cowboy_req:set_resp_header(<<"access-control-allow-origin">>, Origin, Req2),
 	Req4 = cowboy_req:set_resp_header(<<"vary">>, <<"origin, accept-encoding">>, Req3),
-%%	Req5 = cowboy_req:set_resp_header(<<"access-control-allow-methods">>, <<"*">>, Req4),
 	Req5 = cowboy_req:set_resp_header(<<"access-control-allow-methods">>, Methods, Req4),
-	cowboy_req:set_resp_header(<<"access-control-max-age">>, <<"20">>, Req5).
+	Req6 = cowboy_req:set_resp_header(<<"accept">>, <<"*/*">>, Req5),
+	cowboy_req:set_resp_header(<<"access-control-max-age">>, <<"20">>, Req6).

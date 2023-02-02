@@ -87,6 +87,9 @@ from_json(Req, #call_state{method = <<"POST">>} = State) ->
 				<<"getsubsystemnames">> ->
 					Answer = #{ tagList => []},
 					{200,cowboy_req:set_resp_body(jsone:encode(Answer),Req)};
+				<<"getloglevelnames">> ->
+					Answer = #{ list => [<<"debug">>, <<"information">>]},
+					{200,cowboy_req:set_resp_body(jsone:encode(Answer),Req)};
 				_ ->
 					restlib:bad_request(Req1, { 1002, <<"Invalid command">>, <<"Invalid command">>})
 			end

@@ -109,7 +109,7 @@ from_json(Req, State) ->
 
 -spec to_json(Req :: request_data(), State :: request_state()) -> request_answer().
 to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
-	io:format("to_json called GET info: ~p~n",[Req]),
+	io:format("to_json called GET info:~n"),
 	Answer = #{ hostname => node(),
 		uptime =>  State#call_state.session_time - persistent_term:get(microservice_start_time),
 		start => persistent_term:get(microservice_start_time),
@@ -117,7 +117,7 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 		},
 	{ jsone:encode(Answer), Req, State};
 to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
-	io:format("to_json called GET 2: ~p~n",[Req]),
+	io:format("to_json called GET 2: ~n"),
 	Answer = #{
 		version => <<"1.0">>,
 		hostname => list_to_binary(net_adm:localhost()),
@@ -130,7 +130,7 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
 	},
 	{ jsone:encode(Answer), Req, State};
 to_json(Req, #call_state{method = <<"POST">>} = State) ->
-	io:format("to_json called POST: ~p~n",[Req]),
+	io:format("to_json called POST: ~n"),
 	{ok, Req, State};
 to_json(Req, #call_state{method = <<"PUT">>} = State) ->
 	{ok, Req, State};

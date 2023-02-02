@@ -78,7 +78,21 @@ from_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
 	{ ok, Req, State};
 from_json(Req, #call_state{method = <<"POST">>} = State) ->
 	io:format("from_json called POST: ~n"),
-	{ok, Req, State};
+	{Status,NewReq} = case cowboy_req:read_body(Req) of
+		{ok,Body,Req} ->
+			ParsedBody = jsone:decode(Body),
+			case maps:get(<<"command">>, ParsedBody, undefined) of
+				undefined ->
+					restlib:bad_request(Req, { 1001, <<"Missing command">>, <<"Command should be systemlogs, subsystems">>});
+				<<"getsubsystemnames">> ->
+					Answer = #{ tagList => []},
+					{200,cowboy_req:set_resp_body(jsone:encode(Answer),Req)};
+				_ ->
+					restlib:bad_request(Req, { 1002, <<"Invalid command">>, <<"Invalid command">>})
+			end
+	end,
+	EReq = cowboy_req:reply(Status,NewReq),
+	{ stop, EReq, State};
 from_json(Req, #call_state{method = <<"PUT">>} = State) ->
 	{ok, Req, State};
 from_json(Req, #call_state{method = <<"HEAD">>} = State) ->

@@ -10,7 +10,7 @@
 -author("stephb").
 
 %% API
--export([get_access_token/1,get_caller_id/1]).
+-export([get_access_token/1,get_caller_id/1,bad_request/2]).
 
 get_access_token(_Req)->
 	{ok,token}.
@@ -31,3 +31,11 @@ get_access_token(_Req)->
 
 get_caller_id(_Token)->
 	{ ok , default }.
+
+bad_request(Req, {ErrorCode, ErrorDetails, ErrorDescription}) ->
+	Answer = #{
+		'ErrorCode' => ErrorCode,
+		'ErrorDetails' => ErrorDetails,
+		'ErrorDescription' => ErrorDescription
+	},
+	{ 400, cowboy_req:set_resp_body(jsone:encode(Answer), Req) }.

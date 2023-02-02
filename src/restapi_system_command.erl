@@ -93,6 +93,7 @@ from_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
 	},
 	{ jsone:encode(Answer), Req, State};
 from_json(Req, #call_state{method = <<"POST">>} = State) ->
+	io:format("from_json called POST: ~n"),
 	{ok, Req, State};
 from_json(Req, #call_state{method = <<"PUT">>} = State) ->
 	{ok, Req, State};

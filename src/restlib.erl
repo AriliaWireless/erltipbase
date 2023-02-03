@@ -20,7 +20,7 @@ authorization_verification(Req)->
 				undefined ->
 					case security_sdk:validate_token(Token) of
 						{ok , EMail, Userinfo} ->
-							io:format("User added to cache: ~p~n",[EMail]),
+%%							io:format("User added to cache: ~p~n",[EMail]),
 							security_token_cache:add_token(Token,EMail, Userinfo),
 							{ ok , EMail, Userinfo };
 						Error ->

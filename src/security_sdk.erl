@@ -40,7 +40,9 @@ init([]) ->
 
 handle_call({validate_token,Token}, _From, State) ->
 	{ok,SecurityServices} = microservice:get_service_info(<<"owsec">>),
+	io:format("Security: ~p~n",[SecurityServices]),
 	SecurityService = utils:get_first(SecurityServices),
+	io:format("Security: ~p~n",[SecurityService]),
 	#{ <<"privateEndPoint">> := SecurityServiceEndPoint } = SecurityService,
 	#{ <<"key">> := SecurityKey } = SecurityService,
 	{ok,MyServiceInfo} = microservice:get_my_service_info(),

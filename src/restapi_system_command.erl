@@ -17,7 +17,10 @@
 	token = <<>> :: binary(),
 	session_time = os:system_time(second),
 	caller_id = <<>> :: binary(),
-	command = <<>> :: binary() }
+	command = <<>> :: binary(),
+	email = [] :: string(),
+	userinfo
+	}
 ).
 
 -type request_data() :: #{}.
@@ -127,15 +130,10 @@ generate_etag(Req, State) ->
 
 -spec is_authorized(Req :: request_data(), State :: request_state()) -> request_answer().
 is_authorized(Req, State) ->
-	case restlib:get_access_token(Req) of
-		{ok, Token} ->
-			case restlib:get_caller_id(Token) of
-				{ok, CallerId} ->
-					{true, Req, State#call_state{token = Token, caller_id = CallerId}};
-				{error, _Reason} ->
-					{{false, <<"Bearer">>}, Req, State}
-			end;
-		{error, _Reason} ->
+	case restlib:authorization_verification(Req) of
+		{ok, Email, UserInfo } ->
+			{true, Req, State#call_state{email = Email, userinfo = UserInfo}};
+		_ ->
 			{{false, <<"Bearer">>}, Req, State}
 	end.
 

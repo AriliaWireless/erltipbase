@@ -10,10 +10,16 @@
 -author("stephb").
 
 %% API
--export([get_access_token/1,get_caller_id/1,bad_request/2,add_cors/2]).
+-export([authorization_verification/1,get_caller_id/1,bad_request/2,add_cors/2]).
 
-get_access_token(_Req)->
-	{ok,token}.
+-spec authorization_verification(cowboy_req:req()) -> {ok, string(), #{}} | undefined.
+authorization_verification(Req)->
+	case cowboy_req:parse_header(<<"authorization">>, Req) of
+		{bearer,Token} ->
+			security_sdk:validate_token(Token);
+		_ ->
+			{ error , 500 }
+	end.
 
 %get_access_token(Req) ->
 %	case cowboy_req:header(<<"authorization">>, Req) of

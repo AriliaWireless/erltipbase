@@ -16,6 +16,7 @@
 authorization_verification(Req)->
 	case cowboy_req:parse_header(<<"authorization">>, Req) of
 		{bearer,Token} ->
+			io:format("Token = ~p~n", [Token]),
 			security_sdk:validate_token(Token);
 		_ ->
 			{ error , 500 }

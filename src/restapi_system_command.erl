@@ -129,11 +129,16 @@ generate_etag(Req, State) ->
 
 -spec is_authorized(Req :: request_data(), State :: request_state()) -> request_answer().
 is_authorized(Req, State) ->
-	case restlib:authorization_verification(Req) of
-		{ok, Email, UserInfo } ->
-			{true, Req, State#call_state{email = Email, userinfo = UserInfo}};
+	case State#call_state.method of
+		<<"OPTIONS">> ->
+			{true, Req, State};
 		_ ->
-			{{false, <<"Bearer">>}, Req, State}
+			case restlib:authorization_verification(Req) of
+				{ok, Email, UserInfo } ->
+					{true, Req, State#call_state{email = Email, userinfo = UserInfo}};
+				_ ->
+					{{false, <<"Bearer">>}, Req, State}
+			end
 	end.
 
 -spec is_conflict(Req :: request_data(), State :: request_state()) -> request_answer().

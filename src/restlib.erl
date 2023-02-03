@@ -10,7 +10,7 @@
 -author("stephb").
 
 %% API
--export([get_access_token/1,get_caller_id/1,bad_request/2]).
+-export([get_access_token/1,get_caller_id/1,bad_request/2,add_cors/2]).
 
 get_access_token(_Req)->
 	{ok,token}.
@@ -32,10 +32,24 @@ get_access_token(_Req)->
 get_caller_id(_Token)->
 	{ ok , default }.
 
-bad_request(Req, {ErrorCode, ErrorDetails, ErrorDescription}) ->
-	Answer = #{
+error_description( {ErrorCode, ErrorDetails, ErrorDescription} ) ->
+	#{
 		'ErrorCode' => ErrorCode,
 		'ErrorDetails' => ErrorDetails,
 		'ErrorDescription' => ErrorDescription
-	},
-	{ 400, cowboy_req:set_resp_body(jsone:encode(Answer), Req) }.
+	}.
+
+-spec bad_request( cowboy_req:req(), { integer(), string(), string()}) ->
+	{ integer(), cowboy_req:req()}.
+bad_request(Req, {ErrorCode, ErrorDetails, ErrorDescription} = ErrorInformation) when is_integer(ErrorCode), is_list(ErrorDetails), is_list(ErrorDescription) ->
+	{ 400, cowboy_req:set_resp_body(jsone:encode(error_description(ErrorInformation)), Req) }.
+
+add_cors(Req0, Methods) ->
+	Origin = cowboy_req:header(<<"origin">>, Req0,<<"*">>),
+	Req1 = cowboy_req:set_resp_header(<<"access-control-allow-credentials">>, <<"true">>, Req0),
+	Req2 = cowboy_req:set_resp_header(<<"access-control-allow-headers">>, <<"authorization, content-type, X-PINGOTHER">>, Req1),
+	Req3 = cowboy_req:set_resp_header(<<"access-control-allow-origin">>, Origin, Req2),
+	Req4 = cowboy_req:set_resp_header(<<"vary">>, <<"origin, accept-encoding">>, Req3),
+	Req5 = cowboy_req:set_resp_header(<<"access-control-allow-methods">>, Methods, Req4),
+	Req6 = cowboy_req:set_resp_header(<<"accept">>, <<"*/*">>, Req5),
+	cowboy_req:set_resp_header(<<"access-control-max-age">>, <<"20">>, Req6).

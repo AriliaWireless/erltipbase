@@ -1,6 +1,6 @@
 -module(utils).
 
--export([to_hex/1,get_first/1, set_app_name/1, get_app_name/0, add_cors/2]).
+-export([to_hex/1,get_first/1, set_app_name/1, get_app_name/0]).
 -export([number_of_cpus/0]).
 
 to_hex_digit(D) ->
@@ -37,13 +37,3 @@ get_app_name() ->
 -spec number_of_cpus() -> integer().
 number_of_cpus() ->
 	length(cpu_sup:util([detailed,per_cpu])).
-
-add_cors(Req0, Methods) ->
-	Origin = cowboy_req:header(<<"origin">>, Req0,<<"*">>),
-	Req1 = cowboy_req:set_resp_header(<<"access-control-allow-credentials">>, <<"true">>, Req0),
-	Req2 = cowboy_req:set_resp_header(<<"access-control-allow-headers">>, <<"authorization, content-type, X-PINGOTHER">>, Req1),
-	Req3 = cowboy_req:set_resp_header(<<"access-control-allow-origin">>, Origin, Req2),
-	Req4 = cowboy_req:set_resp_header(<<"vary">>, <<"origin, accept-encoding">>, Req3),
-	Req5 = cowboy_req:set_resp_header(<<"access-control-allow-methods">>, Methods, Req4),
-	Req6 = cowboy_req:set_resp_header(<<"accept">>, <<"*/*">>, Req5),
-	cowboy_req:set_resp_header(<<"access-control-max-age">>, <<"20">>, Req6).

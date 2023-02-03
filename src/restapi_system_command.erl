@@ -26,12 +26,10 @@
 
 %% API
 -export([init/2, terminate/3, allowed_methods/2, allow_missing_post/2, charsets_provided/2, content_types_accepted/2,
-         content_types_provided/2, is_conflict/2, valid_content_headers/2, delete_completed/2, delete_resource/2, expires/2,
-         previously_existed/2, resource_exists/2, is_authorized/2, forbidden/2, generate_etag/2, known_methods/2, languages_provided/2,
-         last_modified/2, malformed_request/2, moved_permanently/2, moved_temporarily/2,
+         content_types_provided/2, is_conflict/2, valid_content_headers/2, is_authorized/2, generate_etag/2, known_methods/2, languages_provided/2,
+         last_modified/2, malformed_request/2,
          options/2,
-         multiple_choices/2, rate_limited/2,
-         service_available/2, uri_too_long/2, valid_entity_length/2,
+         service_available/2, valid_entity_length/2,
          variances/2,
          from_json/2, to_json/2]).
 
@@ -44,7 +42,7 @@ init(Req, _State) ->
 		command = proplists:get_value(<<"command">>,QS,<<>>)
 	},
 	%% io:format("State->~p~n",[NewState]),
-	{cowboy_rest, utils:add_cors(Req,<<"GET, POST, OPTIONS">>), NewState}.
+	{cowboy_rest, restlib:add_cors(Req,<<"GET, POST, OPTIONS">>), NewState}.
 
 -spec terminate(Reason :: any(), Req :: request_data(), any()) -> ok.
 terminate(_Reason, _Req, _State) ->
@@ -99,18 +97,10 @@ from_json(Req, #call_state{method = <<"POST">>} = State) ->
 	end,
 	EReq = cowboy_req:reply(Status,NewReq),
 	{ stop, EReq, State};
-from_json(Req, #call_state{method = <<"PUT">>} = State) ->
-	{ok, Req, State};
-from_json(Req, #call_state{method = <<"HEAD">>} = State) ->
-	{ok, Req, State};
-from_json(Req, #call_state{method = <<"PATCH">>} = State) ->
-	{ok, Req, State};
-from_json(Req, #call_state{method = <<"OPTIONS">>} = State) ->
-	{ok, Req, State};
-from_json(Req, #call_state{method = <<"DELETE">>} = State) ->
-	{ok, Req, State};
 from_json(Req, State) ->
-	{ok, Req, State}.
+	{ Status, NewReq } = restlib:bad_request(Req, { 1002, <<"Unsupported method">>, <<"Invalid method">>}),
+	EReq = cowboy_req:reply(Status,NewReq),
+	{ stop, EReq, State}.
 
 -spec to_json(Req :: request_data(), State :: request_state()) -> request_answer().
 to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
@@ -126,41 +116,10 @@ to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 		erlangnode => node()
 	},
 	{jsone:encode(Answer), Req, State};
-to_json(Req, #call_state{method = <<"GET">>, command= <<>>} = State) ->
-	{ok, Req, State};
-to_json(Req, #call_state{method = <<"POST">>} = State) ->
-	io:format("to_json called POST: ~n"),
-	{ok, Req, State};
-to_json(Req, #call_state{method = <<"PUT">>} = State) ->
-	{ok, Req, State};
-to_json(Req, #call_state{method = <<"HEAD">>} = State) ->
-	{ok, Req, State};
-to_json(Req, #call_state{method = <<"PATCH">>} = State) ->
-	{ok, Req, State};
-to_json(Req, #call_state{method = <<"OPTIONS">>} = State) ->
-	io:format("Doing options~n"),
-	{ok, Req, State};
-to_json(Req, #call_state{method = <<"DELETE">>} = State) ->
-	{ok, Req, State};
 to_json(Req, State) ->
-	io:format("Doing nothing~n"),
-	{ok, Req, State}.
-
--spec delete_completed(Req :: request_data(), State :: request_state()) -> request_answer().
-delete_completed(Req, State) ->
-	{true, Req, State}.
-
--spec delete_resource(Req :: request_data(), State :: request_state()) -> request_answer().
-delete_resource(Req, State) ->
-	{false, Req, State}.
-
--spec expires(Req :: request_data(), State :: request_state()) -> request_answer().
-expires(Req, State) ->
-	{undefined, Req, State}.
-
--spec forbidden(Req :: request_data(), State :: request_state()) -> request_answer().
-forbidden(Req, State) ->
-	{false, Req, State}.
+	{ Status, NewReq } = restlib:bad_request(Req, { 1002, <<"Unsupported method">>, <<"Invalid method">>}),
+	EReq = cowboy_req:reply(Status,NewReq),
+	{ stop, EReq, State}.
 
 -spec generate_etag(Req :: request_data(), State :: request_state()) -> request_answer().
 generate_etag(Req, State) ->
@@ -200,43 +159,13 @@ last_modified(Req, State) ->
 malformed_request(Req, State) ->
 	{false, Req, State}.
 
--spec moved_permanently(Req :: request_data(), State :: request_state()) -> request_answer().
-moved_permanently(Req, State) ->
-	{false, Req, State}.
-
--spec moved_temporarily(Req :: request_data(), State :: request_state()) -> request_answer().
-moved_temporarily(Req, State) ->
-	{false, Req, State}.
-
--spec multiple_choices(Req :: request_data(), State :: request_state()) -> request_answer().
-multiple_choices(Req, State) ->
-	{false, Req, State}.
-
 -spec options(Req :: request_data(), State :: request_state()) -> request_answer().
 options(Req, State) ->
-%%	Req1 = utils:add_cors(Req,<<"GET, POST, OPTIONS">>),
-	%% io:format("Doing options (2): ~p~n",[Req1]),
 	{ok, Req, State}.
-
--spec previously_existed(Req :: request_data(), State :: request_state()) -> request_answer().
-previously_existed(Req, State) ->
-	{false, Req, State}.
-
--spec rate_limited(Req :: request_data(), State :: request_state()) -> request_answer().
-rate_limited(Req, State) ->
-	{false, Req, State}.
-
--spec resource_exists(Req :: request_data(), State :: request_state()) -> request_answer().
-resource_exists(Req, State) ->
-	{true, Req, State}.
 
 -spec service_available(Req :: request_data(), State :: request_state()) -> request_answer().
 service_available(Req, State) ->
 	{true, Req, State}.
-
--spec uri_too_long(Req :: request_data(), State :: request_state()) -> request_answer().
-uri_too_long(Req, State) ->
-	{false, Req, State}.
 
 -spec valid_content_headers(Req :: request_data(), State :: request_state()) -> request_answer().
 valid_content_headers(Req, State) ->

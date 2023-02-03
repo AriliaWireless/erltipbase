@@ -53,7 +53,7 @@ delete_token(Token) ->
 -spec(start_link() ->
 	{ok, Pid :: pid()} | ignore | {error, Reason :: term()}).
 start_link() ->
-	gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -65,7 +65,7 @@ start_link() ->
 	{ok, State :: #security_token_cache_state{}} | {ok, State :: #security_token_cache_state{}, timeout() | hibernate} |
 	{stop, Reason :: term()} | ignore).
 init([]) ->
-	{ok, #security_token_cache_state{}}.
+	{ok, #security_token_cache_state{ cache = #{}}}.
 
 %% @private
 %% @doc Handling call messages

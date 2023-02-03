@@ -14,7 +14,7 @@
 
 -spec authorization_verification(cowboy_req:req()) -> {ok, string(), #{}} | undefined.
 authorization_verification(Req)->
-	case cowboy_req:parse_header(<<"authorization">>, Req) of
+	case cowboy_req:parse_header(<<"Authorization">>, Req) of
 		{bearer,Token} ->
 			io:format("Token = ~p~n", [Token]),
 			security_sdk:validate_token(Token);

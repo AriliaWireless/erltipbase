@@ -18,7 +18,8 @@ authorization_verification(Req)->
 		{bearer,Token} ->
 			io:format("Token = ~p~n", [Token]),
 			security_sdk:validate_token(Token);
-		_ ->
+		Error ->
+			io:format("Notoken = ~p~n", [Error]),
 			{ error , 500 }
 	end.
 

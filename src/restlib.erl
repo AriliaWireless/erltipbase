@@ -16,7 +16,19 @@
 authorization_verification(Req)->
 	case cowboy_req:parse_header(<<"authorization">>, Req) of
 		{bearer,Token} ->
-			security_sdk:validate_token(Token);
+			case security_token_cache:get_token(Token) of
+				undefined ->
+					case security_sdk:validate_token(Token) of
+						{ok , EMail, Userinfo} ->
+							io:format("User added to cache: ~p~n",[EMail]),
+							security_token_cache:add_token(Token,EMail, Userinfo),
+							{ ok , EMail, Userinfo };
+						Error ->
+							Error
+					end;
+				{ EMail, Userinfo } ->
+					{ ok, EMail, Userinfo}
+			end;
 		_ ->
 			{ error , 500 }
 	end.

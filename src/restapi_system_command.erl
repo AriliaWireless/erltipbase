@@ -135,7 +135,7 @@ is_authorized(Req, State) ->
 		_ ->
 			case restlib:authorization_verification(Req) of
 				{ok, Email, UserInfo } ->
-					io:format("EMail = ~p~n",[Email]),
+					%% io:format("EMail = ~p~n",[Email]),
 					{true, Req, State#call_state{email = Email, userinfo = UserInfo}};
 				_ ->
 					{{false, <<"Bearer">>}, Req, State}

@@ -16,4 +16,5 @@ init([]) ->
 		mgr_internal_webserver:creation_info() ++
 		rest_server_process:creation_info() ++
 		security_sdk:creation_info(),
+		security_token_cache:creation_info(),
 	{ok, {{one_for_one, 1, 5}, Processes}}.

@@ -38,13 +38,12 @@
 
 -spec init(Req :: request_data(), any()) -> request_answer().
 init(Req, _State) ->
+	io:format("REQ-> ~p~n",[Req]),
 	QS = cowboy_req:parse_qs(Req),
-	%% io:format("System info page: QUERY=~p~n",[QS]),
 	NewState = #call_state{
 		method = cowboy_req:method(Req),
 		command = proplists:get_value(<<"command">>,QS,<<>>)
 	},
-	%% io:format("State->~p~n",[NewState]),
 	{cowboy_rest, restlib:add_cors(Req,<<"GET, POST, OPTIONS">>), NewState}.
 
 -spec terminate(Reason :: any(), Req :: request_data(), any()) -> ok.

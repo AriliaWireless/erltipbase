@@ -38,7 +38,7 @@
 
 -spec init(Req :: request_data(), any()) -> request_answer().
 init(Req, _State) ->
-	io:format("REQ-> ~p~n",[Req]),
+%%	io:format("REQ-> ~p~n",[Req]),
 	QS = cowboy_req:parse_qs(Req),
 	NewState = #call_state{
 		method = cowboy_req:method(Req),
@@ -135,6 +135,7 @@ is_authorized(Req, State) ->
 		_ ->
 			case restlib:authorization_verification(Req) of
 				{ok, Email, UserInfo } ->
+					io:format("EMail = ~p~n",[Email]),
 					{true, Req, State#call_state{email = Email, userinfo = UserInfo}};
 				_ ->
 					{{false, <<"Bearer">>}, Req, State}

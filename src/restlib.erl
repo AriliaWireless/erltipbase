@@ -14,29 +14,12 @@
 
 -spec authorization_verification(cowboy_req:req()) -> {ok, string(), #{}} | undefined.
 authorization_verification(Req)->
-	io:format("Auth = ~p~n",[Req]),
 	case cowboy_req:parse_header(<<"authorization">>, Req) of
 		{bearer,Token} ->
-			io:format("Token = ~p~n", [Token]),
 			security_sdk:validate_token(Token);
-		Error ->
-			io:format("Notoken = ~p~n", [Error]),
+		_ ->
 			{ error , 500 }
 	end.
-
-%get_access_token(Req) ->
-%	case cowboy_req:header(<<"authorization">>, Req) of
-%		<<"Bearer ", Token/binary>> ->
-%			{ok, Token};
-%		_ ->
-%			QsVals = cowboy_req:parse_qs(Req),
-%			case proplists:get_value(<<"access_token">>, QsVals,undefined) of
-%				undefined ->
-%					{error, missing};
-%				Token ->
-%					{ ok , Token }
-%			end
-%	end.
 
 get_caller_id(_Token)->
 	{ ok , default }.

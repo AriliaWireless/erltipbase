@@ -40,16 +40,13 @@ init([]) ->
 
 handle_call({validate_token,Token}, _From, State) ->
 	{ok,SecurityServices} = microservice:get_service_info(<<"owsec">>),
-	io:format("Security: ~p~n",[SecurityServices]),
 	SecurityService = utils:get_first(SecurityServices),
-	io:format("Security: ~p~n",[SecurityService]),
 	#{ <<"privateEndPoint">> := SecurityServiceEndPoint } = SecurityService,
 	#{ <<"key">> := SecurityKey } = SecurityService,
 	{ok,MyServiceInfo} = microservice:get_my_service_info(),
 	#{ <<"publicEndPoint">> := MyPublicName} = MyServiceInfo,
 	Request = { binary_to_list(SecurityServiceEndPoint) ++ "/api/v1/validateToken?token=" ++ binary_to_list(Token),
 		[ {"X-API-KEY" , binary_to_list(SecurityKey) }, {"X-INTERNAL-NAME", binary_to_list(MyPublicName)}]},
-	io:format("~p == ~p~n",[SecurityKey,MyPublicName]),
 	case httpc:request(get,Request,[],[]) of
 		{ok, {{ _, ReturnCode, _}, _, Body }} ->
 			Answer = jsone:decode(list_to_binary(Body)),

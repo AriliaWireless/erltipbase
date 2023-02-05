@@ -32,7 +32,7 @@ websocket_handle( {text, <<_T:1/binary, "oken:", Token/binary>>} , #ws_state{ au
 			io:format("WS: Token is not valid: ~p~n", [Token]),
 			{stop, State};
 		{ok, EMail,Userinfo} ->
-			io:format("WS: Token is valid: ~p~n", [Token]),
+			io:format("WS: Token is valid for ~p: ~p~n", [EMail, Token]),
 			{ok, State#ws_state{ email = EMail, userinfo = Userinfo}}
 	end;
 

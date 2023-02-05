@@ -74,7 +74,7 @@ init([]) ->
 								                 });
 							false ->
 								cowboy:start_clear(?RESTAPI_SERVER_NAME,
-								                   [{port, Port}],
+								                   [{port, Port}, inet, inet6],
 								                   #{env => #{dispatch => Dispatch}})
 	end,
 	process_flag(trap_exit, true),

@@ -90,7 +90,6 @@ handle_call({ add , EMail, Pid }, _From, State) ->
 		PidList ->
 			maps:put(EMail,PidList ++ [Pid],State#ws_user_registry_state.user_to_pid)
 	end,
-	io:format("Newusers: ~p~n", [NewUsers]),
 	{reply, ok, State#ws_user_registry_state{
 		user_to_pid = NewUsers,
 		pid_to_user = maps:put(Pid,EMail,State#ws_user_registry_state.pid_to_user)}};
@@ -109,7 +108,6 @@ handle_call({ delete_pid , Pid}, _From, State = #ws_user_registry_state{}) ->
 		end,
 	NewUsers =  maps:fold(FoldingFun, #{}, State#ws_user_registry_state.user_to_pid),
 	NewPids = maps:remove(Pid,State#ws_user_registry_state.pid_to_user),
-	io:format("Delete: ~p~n~p~n",[NewUsers,NewPids]),
 	{reply, ok, State#ws_user_registry_state{ user_to_pid = NewUsers, pid_to_user = NewPids}};
 handle_call( {send_frame, EMail, Frame}, _From, State = #ws_user_registry_state{}) ->
 	case maps:get(EMail,State#ws_user_registry_state.user_to_pid,undefined) of

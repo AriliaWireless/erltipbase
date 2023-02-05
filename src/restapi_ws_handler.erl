@@ -10,7 +10,7 @@
 -author("stephb").
 
 %% API
--export([init/2, websocket_init/1, websocket_handle/2, websocket_info/2]).
+-export([init/2, websocket_init/1, websocket_handle/2, websocket_info/2, terminate/3]).
 
 -record(ws_state, {
 	authenticated = false :: boolean(),
@@ -62,3 +62,7 @@ websocket_info({text, Text}, State) ->
 websocket_info(Info, State) ->
 	io:format("Data4: ~p~n", [Info]),
 	{ok, State}.
+
+terminate(_Reason, _PartialReq, _State) ->
+	io:format("Terminating~p"),
+	ok.

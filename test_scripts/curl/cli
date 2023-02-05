@@ -31,6 +31,7 @@ fi
 
 username=${OWSEC_USERNAME}
 password=${OWSEC_PASSWORD}
+svctype="ow_erlhello"
 
 if [[ "${FLAGS}" == "" ]]
 then
@@ -53,7 +54,7 @@ login() {
 		exit 13
 	fi
 	echo "${token}" > token.json
-	setgateway
+	setservice
 }
 
 findbrowser() {
@@ -76,13 +77,13 @@ findbrowser() {
 	fi
 }
 
-setgateway() {
+setservice() {
 if [ -z ${OWGW_OVERRIDE+x} ]; then
 	curl  ${FLAGS} -X GET "https://${OWSEC}/api/v1/systemEndpoints" \
 		-H "Content-Type: application/json" \
 		-H "Accept: application/json" \
         -H "Authorization: Bearer ${token}"  > ${result_file}
-	rawurl="$(cat ${result_file} | jq -r '.endpoints[] | select( .type == "owgw" ) | .uri')"
+	rawurl="$(cat ${result_file} | jq -r '.endpoints[] | select( .type == "${svctype}" ) | .uri')"
 	if [[ ! -z "${rawurl}" ]]; then
 		proto="$(echo $rawurl | grep :// | sed -e's,^\(.*://\).*,\1,g')"
 		url="$(echo ${rawurl/$proto/})"

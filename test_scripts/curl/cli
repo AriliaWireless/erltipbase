@@ -177,7 +177,7 @@ wstest() {
 notifications() {
 	if [[ -z "$1" ]]
 	then
-			timeout=30
+			timeout=300
 	else
 			timeout=$1
 	fi

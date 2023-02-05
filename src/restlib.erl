@@ -12,22 +12,15 @@
 %% API
 -export([authorization_verification/1,get_caller_id/1,bad_request/2,add_cors/2]).
 
--spec authorization_verification(cowboy_req:req()) -> {ok, string(), #{}} | undefined.
+-spec authorization_verification(cowboy_req:req()) -> {ok, string(), #{}} | {error, integer()}.
 authorization_verification(Req)->
 	case cowboy_req:parse_header(<<"authorization">>, Req) of
 		{bearer,Token} ->
-			case security_token_cache:get_token(Token) of
-				undefined ->
-					case security_sdk:validate_token(Token) of
-						{ok , EMail, Userinfo} ->
-%%							io:format("User added to cache: ~p~n",[EMail]),
-							security_token_cache:add_token(Token,EMail, Userinfo),
-							{ ok , EMail, Userinfo };
-						Error ->
-							Error
-					end;
-				{ EMail, Userinfo } ->
-					{ ok, EMail, Userinfo}
+			case security_sdk:validate_token(Token) of
+				{ok , EMail, Userinfo} ->
+					{ ok, EMail, Userinfo};
+				Error ->
+					Error
 			end;
 		_ ->
 			{ error , 500 }

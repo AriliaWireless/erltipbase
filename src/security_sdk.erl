@@ -56,6 +56,7 @@ handle_call({validate_token,Token}, _From, State) ->
 						200 ->
 							#{ <<"userInfo">> := UserInfo } = Answer,
 							#{ <<"email">> := EMail } = UserInfo,
+							security_token_cache:add_token(Token,EMail,UserInfo),
 							{reply, {ok, EMail, UserInfo } , State};
 						_ ->
 							{ reply, {error, ReturnCode}, State}

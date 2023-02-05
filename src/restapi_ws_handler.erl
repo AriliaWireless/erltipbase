@@ -26,7 +26,7 @@ websocket_init(State) ->
 	io:format("WS Init 2~n"),
 	{ok, State}.
 
-websocket_handle( {text, <<_T:8/binary, "oken:", Token/binary>>} , #ws_state{ authenticated = false}=State ) ->
+websocket_handle( {text, <<_T:1/binary, "oken:", Token/binary>>} , #ws_state{ authenticated = false}=State ) ->
 	case security_sdk:validate_token(Token) of
 		{error, _ErrorCode} ->
 			io:format("WS: Token is not valid: ~p~n", [Token]),

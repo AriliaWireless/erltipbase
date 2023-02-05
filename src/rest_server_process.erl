@@ -63,19 +63,21 @@ init([]) ->
 							true ->
 								{ok, CertFile} = application:get_env(utils:get_app_name(),restapi_external_cert),
 								{ok, KeyFile} = application:get_env(utils:get_app_name(),restapi_external_key),
+								{ok, CaCertFile} = application:get_env(utils:get_app_name(),restapi_external_ca),
 								Password = application:get_env(utils:get_app_name(),restapi_external_key_password,""),
 								cowboy:start_tls(?RESTAPI_SERVER_NAME, [
 									{port, Port},
 									inet6,
 									{certfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ CertFile},
 									{keyfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ KeyFile},
+									{cacertfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ CaCertFile},
 									{password,Password}
 								], #{
 									                 env => #{dispatch => Dispatch}
 								                 });
 							false ->
 								cowboy:start_clear(?RESTAPI_SERVER_NAME,
-								                   [{port, Port}, inet, inet6],
+								                   [{port, Port}, inet6],
 								                   #{env => #{dispatch => Dispatch}})
 	end,
 	process_flag(trap_exit, true),

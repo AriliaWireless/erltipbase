@@ -115,7 +115,7 @@ handle_call({ delete_pid , Pid}, _From, State = #ws_user_registry_state{}) ->
 			end
 	end,
 	NewPids = maps:remove(Pid,State#ws_user_registry_state.pid_to_user),
-	io:format("Delete: ~p~n~p~n",[NewUsers,NewPids])
+	io:format("Delete: ~p~n~p~n",[NewUsers,NewPids]),
 	{reply, ok, State#ws_user_registry_state{ user_to_pid = NewUsers, pid_to_user = NewPids}};
 handle_call( {send_frame, EMail, Frame}, _From, State = #ws_user_registry_state{}) ->
 	case maps:get(EMail,State#ws_user_registry_state.user_to_pid,undefined) of

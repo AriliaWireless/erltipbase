@@ -19,9 +19,11 @@
 }).
 
 init(Req,_State) ->
+	io:format("WS Init~n"),
 	{cowboy_websocket, Req, #ws_state{} }.
 
 websocket_init(State) ->
+	io:format("WS Init 2~n"),
 	{ok, State}.
 
 websocket_handle( {text, <<"Token:", Token/binary>>} , #ws_state{ authenticated = false}=State ) ->

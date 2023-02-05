@@ -44,6 +44,8 @@ websocket_handle( {binary, Data} , State ) ->
 	{ok, State}.
 
 websocket_info({log, Text}, State) ->
+	io:format("Data: ~p~n", [Text]),
 	{[{text, Text}], State};
-websocket_info(_Info, State) ->
+websocket_info(Info, State) ->
+	io:format("Data: ~p~n", [Info]),
 	{ok, State}.

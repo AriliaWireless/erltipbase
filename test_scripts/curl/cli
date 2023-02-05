@@ -171,7 +171,7 @@ reloadsubsystem() {
 wstest() {
 	echo "Token:${token}"
 	wscat \
-		-c wss://${OWGW}/api/v1/ws
+		-c wss://${SVCURL}/api/v1/ws
 }
 
 notifications() {
@@ -181,7 +181,7 @@ notifications() {
 	else
 			timeout=$1
 	fi
-	socket="wss://${OWGW}/api/v1/ws"
+	socket="wss://${SVCURL}/api/v1/ws"
 	echo ${socket}
 	if [[ "$(which wscat)" == "" ]]
 	then
@@ -291,152 +291,20 @@ test_service() {
 }
 
 help() {
-  echo
-  echo "getdevice <serial>                Get the device JSON document."
-  echo "deletedevice <serial>             Delete the device."
-  echo "createdevice <serial> <cfg> <MAC> Create a device using the default configuration."
-  echo "validateconfig <config file>	  Validate a configuration file."
-  echo "                                  cfg: JSON config file name"
-  echo "                                  <MAC>: string MAC Address"
-  echo "getdevicestatus <serial>          Get the device status JSON document."
-  echo "getstats <serial>                 Get statistics for the device."
-  echo "gethealthchecks <serial>          Get healthchecks for a device."
-  echo "newesthealthchecks <serial>       Get newest healthchecks for a device."
-  echo "lasthealthcheck <serial>          Get the last healthcheck"
-  echo "addnote <serial> <note>           Add a notes to the notes section"
-  echo
-  echo "getcapababilities <serial>        Get the device capabilities JSON document."
-  echo "deletecapababilities <serial>     Delete the device capabilities JSON."
-  echo
-  echo "reboot <serial>                   Reboot the device."
-  echo "upgrade <serial> <URI>            Do firmware upgrade for a device."
-  echo "leds <serial> <pattern> <d>       Activate LEDs a device."
-  echo "                                  pattern: on/off/blink"
-  echo "                                  d: number in seconds"
-  echo "configure <serial> <cfg>          Change configuration for a device."
-  echo "                                  cfg must be valid JSON config."
-  echo "factory <serial> <true/false>     Do factory reset for device. true=keep redirector, false=reset redirector"
-  echo "request <serial> <message>        Force a message from the device."
-  echo "                                  message=state/healthcheck"
-  echo "wifiscan <serial> <verbose>       Do wifiscan for a device."
-  echo "                                  verbose=true/false"
-  echo "active <serial> <verbose>         Do an active wifiscan for a device."
-  echo "                                  verbose=true/false"
-  echo "trace <serial> <d> <n>            Launch a remote trace for a device."
-  echo "                                  d=number of seconds"
-  echo "                                  n=lan/wan"
-  echo
-  echo "getcommand <command-uuid>         Get the command JSON document."
-  echo "deletecommand <command-uuid>      Delete the command."
-  echo "newestcommands <serial>           Get the newest commands for a device."
-  echo "listdevices                       List devices"
-  echo "listcommands <serial>             List commands for a specific device"
-  echo "deletecommands <serial>           Delete commands for a device."
-  echo
-  echo "getlogs <serial>                  Get logs for the device."
-  echo "newestlogs <serial>               Get the latest logs for the device."
-  echo "deletelogs <serial>               Delete logs for the device."
-  echo "eventqueue <serial>               Request event queue for the device."
-  echo
-  echo "listdefaultconfigs                List a default configurations"
-  echo "createdefaultconfig <name> <ids> <cfg> Create a default configuration"
-  echo "                                  name=unique name, no spaces"
-  echo "                                  ids=coma separated list of models"
-  echo "                                  cfg=config file name"
-  echo "deletedefaultconfig <name>        Delete a default configuration"
-  echo
-  echo "addblacklistdevice <serial> <r>   Add a device to the black list"
-  echo "                                  <r> Reason for blacklisting"
-  echo "getblacklist                      List all blacklisted devices"
-  echo "deleteblacklistdevice  <serial>   Add a device to the black list"
-  echo
-  echo "devicecount                       Get the number of devices in the DB"
-  echo "deviceserialnumbers               Get only the serial numbers"
-  echo "selectdevices <serial list>       get a list of serial numbers (must be comma separated)"
-  echo "deviceswithstatus                 Get devices with their status"
-  echo
   echo "setloglevel <sys> <level>         Set the logging system level for individual subsystems."
   echo "                                  sys:ufileuploader/websocket/storage/restapi/commandmanager/auth/deviceregistry/all"
   echo "                                  level:none/fatal/critical/error/warning/notice/information/debug/trace"
   echo "getloglevels 		              Get the log levels of all the subsystems"
   echo "getloglevelnames                  Get the list of log level names possible"
   echo "getsubsystemnames                 Get the subsystems that can be used when setting log levels."
-  echo "getfile <serial> <uuid> <name>	  Get the file associated with trace command <uuid> for device <serial>"
-  echo "		                          The file will be saved with the name <name>"
-  echo
-  echo "rtty <serial> <noconnect>		  Get the details for an rtty session."
-  echo
-  echo "laststats <serial>	              Get the last statistics for a device"
-  echo "neweststats <serial>	          Get the newest statistics for a device"
-  echo
-  echo "ouilookup <serial> 		  Lookup an OUI"
-  echo
-  echo "dashboard 			  Get the dashboard document"
   echo "systeminfo			  Get information on the system running the service."
   echo
   echo "wstest  			  Testing the WebSocket interface."
-  echo
-  echo "test_service <serial>             Run a set of CLI commands for testing purposes"
-  echo "runscript <serial> <type> <script>	Run a script. type must be uci, ucode, shell."
-  echo
-  echo
-  echo "To pass additional flags to the CURL command, create an environment variable called FLAGS and git ve the values you"
-  echo "want. For example, for force all call to use IPv6, set FLAGS=\"-6\", for verbose mode and IPv6, set FLAGS=\"-6 -v\""
-  echo
-  echo
 }
 
 shopt -s nocasematch
 case "$1" in
-	"getdevice") login; getdevice "$2"; logout ;;
 	"help") login; help  ; logout ;;
-	"getcommand") login;  getcommand "$2"  ; logout ;;
-	"deletecommand") login; deletecommand "$2"  ; logout ;;
-	"getcapabilities") login; getcapabilities "$2"  ; logout ;;
-	"deletecapabilities") login; deletecapabilities "$2"  ; logout ;;
-	"listdevices") login; listdevices  ; logout ;;
-	"listdevicesk") login; listdevicesk "$2" ; logout ;;
-	"deletedevice") login; deletedevice "$2" ; logout ;;
-	"deleteoui") login; deleteoui "$2"  ; logout ;;
-	"createdevice") login; createdevice "$2" "$3" "$4" ; logout ;;
-	"reboot") login; reboot "$2"  ; logout ;;
-	"getdevicestatus") login; getdevicestatus "$2"  ; logout ;;
-	"upgrade") login; upgrade "$2" "$3"  ; logout ;;
-	"factory") login; factory "$2" "$3"  ; logout ;;
-	"leds") login; leds "$2" "$3" "$4"  ; logout ;;
-	"listcommands") login; listcommands "$2"  ; logout ;;
-	"deletecommands") login; deletecommands "$2"  ; logout ;;
-	"configure") login; configure "$2" "$3"  ; logout ;;
-	"request") login; request "$2" "$3"  ; logout ;;
-	"wifiscan") login; wifiscan "$2" "$3"  ; logout ;;
-	"activescan") login; activescan "$2" "$3"  ; logout ;;
-	"trace") login; trace "$2" "$3" "$4"  ; logout ;;
-	"getstats") login; getstats "$2"  ; logout ;;
-	"getlogs") login; getlogs "$2"  ; logout ;;
-	"deletelogs") login; deletelogs "$2"  ; logout ;;
-	"gethealthchecks") login; gethealthchecks "$2"  ; logout ;;
-	"createdefaultconfig") login; createdefaultconfig "$2" "$3" "$4"  ; logout ;;
-	"getdefaultconfig") login; getdefaultconfig "$2" ; logout ;;
-	"deletedefaultconfig") login; deletedefaultconfig "$2" ; logout ;;
-	"listdefaultconfigs") login; listdefaultconfigs "$2"  ; logout ;;
-	"addblacklistdevice") login; addblacklistdevice "$2" "$3"  ; logout ;;
-	"deleteblacklistdevice") login; deleteblacklistdevice "$2"  ; logout ;;
-	"getblacklist") login; getblacklist  ; logout ;;
-	"modblacklistdevice") login; modblacklistdevice "$2" "$3" ; logout;;
-	"eventqueue") login; eventqueue "$2"  ; logout ;;
-	"selectdevices") login; selectdevices "$2"  ; logout ;;
-	"deviceserialnumbers") login; deviceserialnumbers   ; logout ;;
-	"devicecount") login; devicecount   ; logout ;;
-	"deviceswithstatus") login; deviceswithstatus "$2"  ; logout ;;
-	"getdevicecomplete") login; getdevicecomplete "$2"  ; logout ;;
-	"getfile") login; getfile "$2" "$3"  ; logout ;;
-	"rtty") login; rtty "$2" "$3" ; logout ;;
-	"laststats") login; laststats "$2"; logout;;
-	"newestcommands") login; newestcommands "$2"; logout;;
-	"neweststats") login; neweststats "$2"; logout;;
-	"newestlogs") login; newestlogs "$2"; logout;;
-	"newesthealthchecks") login; newesthealthchecks "$2"; logout;;
-	"lasthealthcheck") login; lasthealthcheck "$2"; logout;;
 	"login") login ;;
 	"findbrowser") findbrowser; echo "Browser: ${browser}" ;;
 	"setloglevel") login; setloglevel "$2" "$3"  ; logout ;;
@@ -445,29 +313,8 @@ case "$1" in
 	"getsubsystemnames") login; getsubsystemnames; logout ;;
 	"reloadsubsystem") login; reloadsubsystem; logout ;;
 	"systeminfo") login; systeminfo ; logout;;
-	"ouilookup") login; ouilookup "$2"; logout;;
-	"telemetry") login; telemetry "$2"; logout;;
-	"telemetry_to_kafka") login; telemetry_to_kafka "$2" "$3"; logout;;
-	"dashboard") login; dashboard ; logout;;
-	"addnote") login; addnote "$2" "$3"; logout;;
-	"ldevs") login; ldevs  "$2" "$3"; logout ;;
-	"validateconfig") login; validateconfig  "$2" ; logout ;;
 	"wstest") login; wstest; logout;;
-	"caplist") login; caplist; logout;;
-	"iptocountry") login; iptocountry $2; logout;;
-	"test_service") login; test_service $2; logout;;
-	"runscript") login; runscript $2 $3 $4; logout;;
-	"getradiusconfig") login; getradiusconfig ; logout;;
-	"setradiusconfig") login; setradiusconfig $2; logout;;
-	"deleteradiusconfig") login; deleteradiusconfig ; logout;;
-	"deviceping") login; deviceping $2; logout;;
-	"connectionstatistics") login; connectionstatistics $2; logout;;
 	"notifications") login; notifications "$2"; logout;;
-	"stats7") login; stats7 "$2"; logout;;
-	"stats7count") login; stats7count "$2"; logout;;
-	"listscripts") login; listscripts; logout;;
-	"getscript") login; getscript "$2"; logout;;
-	"testtoken") testtoken;;
   *) help ;;
 esac
 

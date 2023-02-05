@@ -66,6 +66,8 @@ init([]) ->
 								Password = application:get_env(utils:get_app_name(),restapi_external_key_password,""),
 								cowboy:start_tls(?RESTAPI_SERVER_NAME, [
 									{port, Port},
+									inet,
+									inet6,
 									{certfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ CertFile},
 									{keyfile, code:priv_dir(utils:get_app_name()) ++ "/" ++ KeyFile},
 									{password,Password}

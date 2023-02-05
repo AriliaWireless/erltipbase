@@ -153,9 +153,9 @@ getsubsystemnames() {
 
 systeminfo() {
 	curl  ${FLAGS} -X GET "https://${SVCURL}/api/v1/system?command=info" \
-		-H "Content-Type: application/json" \
-		-H "Accept: application/json" \
-		-H "Authorization: Bearer ${token}" > ${result_file}
+		-H "content-type: application/json" \
+		-H "accept: application/json" \
+		-H "authorization: Bearer ${token}" > ${result_file}
 	jq < ${result_file}
 }
 

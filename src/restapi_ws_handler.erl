@@ -26,10 +26,10 @@ websocket_init(State) ->
 
 websocket_handle( {text, <<"Token:", Token/binary>>} , #ws_state{ authenticated = false}=State ) ->
 	case security_sdk:validate_token(Token) of
-		undefined ->
+		{error, _ErrorCode} ->
 			io:format("WS: Token is not valid: ~p~n", [Token]),
 			{stop, State};
-		{EMail,Userinfo} ->
+		{ok, EMail,Userinfo} ->
 			io:format("WS: Token is valid: ~p~n", [Token]),
 			{ok, State#ws_state{ email = EMail, userinfo = Userinfo}}
 	end;

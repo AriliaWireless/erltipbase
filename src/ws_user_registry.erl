@@ -88,7 +88,7 @@ handle_call({ add , EMail, Pid }, _From, State) ->
 		undefined ->
 			maps:put(EMail,[Pid],State#ws_user_registry_state.user_to_pid);
 		PidList ->
-			maps:put(EMail,PidList ++ Pid,State#ws_user_registry_state.user_to_pid)
+			maps:put(EMail,PidList ++ [Pid],State#ws_user_registry_state.user_to_pid)
 	end,
 	io:format("Newusers: ~p~n", [NewUsers]),
 	{reply, ok, State#ws_user_registry_state{

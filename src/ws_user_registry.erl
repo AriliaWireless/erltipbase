@@ -14,7 +14,7 @@
 %% API
 -export([start_link/0]).
 
--export([creation_info/0, add_user/2, delete_pid/1, delete_user/1]).
+-export([creation_info/0, add_user/2, delete_pid/1, delete_user/1, send_frame/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2,
@@ -38,14 +38,21 @@ creation_info() ->
            type => worker,
            modules => [?MODULE]} ].
 
+-spec add_user( EMail::binary(), WSPid::pid()) -> { ok }.
 add_user(EMail, Pid) ->
 	gen_server:call(?MODULE, { add , EMail, Pid }).
 
+-spec delete_user( EMail::binary() ) -> {ok}.
 delete_user(EMail) ->
 	gen_server:call(?MODULE, { delete_user , EMail}).
 
+-spec delete_pid(WSPid::pid()) -> {ok}.
 delete_pid(Pid) ->
 	gen_server:call(?MODULE, { delete_pid , Pid}).
+
+-spec send_frame(EMail::binary(), Frame::{ FrameType :: binary | text , FrameContent::binary()}) -> { ok, NumberOfMessagesSent::integer() }.
+send_frame(Email,Frame) ->
+	gen_server:call(?MODULE, { send_frame , Email, Frame}).
 
 %% @doc Spawns the server and registers the local name (unique)
 -spec(start_link() ->
@@ -108,6 +115,15 @@ handle_call({ delete_pid , Pid}, _From, State = #ws_user_registry_state{}) ->
 	end,
 	NewPids = maps:remove(Pid,State#ws_user_registry_state.pid_to_user),
 	{reply, ok, State#ws_user_registry_state{ user_to_pid = NewUsers, pid_to_user = NewPids}};
+handle_call( {send_frame, EMail, Frame}, _From, State = #ws_user_registry_state{}) ->
+	case maps:get(EMail,State#ws_user_registry_state.user_to_pid,undefined) of
+		undefined ->
+			{reply,{ok,0},State};
+		PidList ->
+			Fun = fun(Pid) -> Pid ! Frame end,
+			lists:foreach(Fun,PidList),
+			{reply, {ok,length(PidList)}, State}
+	end;
 handle_call(_Request, _From, State = #ws_user_registry_state{}) ->
 	{reply, ok, State}.
 

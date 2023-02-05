@@ -32,10 +32,17 @@ websocket_handle( {text, <<_T:1/binary, "oken:", Token/binary>>} , #ws_state{ au
 			io:format("WS: Token is not valid: ~p~n", [Token]),
 			{stop, State};
 		{ok, EMail,Userinfo} ->
-			io:format("WS: Token is valid for ~p: ~p~n", [EMail, Token]),
+			%% io:format("WS: Token is valid for ~p: ~p~n", [EMail, Token]),
+			ws_user_registry:add_user(EMail,self()),
 			{ok, State#ws_state{ email = EMail, userinfo = Userinfo}}
 	end;
 
+websocket_handle( ping , State ) ->
+	io:format("Data1: ping~n"),
+	{{reply,pong,<<"Pong!">>}, State};
+websocket_handle( pong , State ) ->
+	io:format("Data1: pong~n"),
+	{ok, State};
 websocket_handle( {text, Data} , State ) ->
 	io:format("Data1: ~p~n", [Data]),
 	{ok, State};
@@ -45,7 +52,13 @@ websocket_handle( {binary, Data} , State ) ->
 
 websocket_info({log, Text}, State) ->
 	io:format("Data3: ~p~n", [Text]),
-	{[{text, Text}], State};
+	{{text, Text}, State};
+websocket_info({binary, Text}, State) ->
+	io:format("Data3: ~p~n", [Text]),
+	{{binary, Text}, State};
+websocket_info({text, Text}, State) ->
+	io:format("Data3: ~p~n", [Text]),
+	{{text, Text}, State};
 websocket_info(Info, State) ->
 	io:format("Data4: ~p~n", [Info]),
 	{ok, State}.

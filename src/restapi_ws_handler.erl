@@ -37,15 +37,15 @@ websocket_handle( {text, <<_T:8/binary, "oken:", Token/binary>>} , #ws_state{ au
 	end;
 
 websocket_handle( {text, Data} , State ) ->
-	io:format("Data: ~p~n", [Data]),
+	io:format("Data1: ~p~n", [Data]),
 	{ok, State};
 websocket_handle( {binary, Data} , State ) ->
-	io:format("Data: ~p~n", [ Data]),
+	io:format("Data2: ~p~n", [ Data]),
 	{ok, State}.
 
 websocket_info({log, Text}, State) ->
-	io:format("Data: ~p~n", [Text]),
+	io:format("Data3: ~p~n", [Text]),
 	{[{text, Text}], State};
 websocket_info(Info, State) ->
-	io:format("Data: ~p~n", [Info]),
+	io:format("Data4: ~p~n", [Info]),
 	{ok, State}.

@@ -95,7 +95,7 @@ init([]) ->
 								private_end_point = InternalEndPoint,
 								public_end_point = PublicEndPoint,
 								data_dir = DataDir,
-						    app_name = <<"ow_erlhelloworld">>,
+						    app_name = <<"ow_erlhello">>,
 								version = Version,
 								hash = Hash,
 								id = registry:get(system_id)}}.

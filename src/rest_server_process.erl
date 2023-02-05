@@ -54,7 +54,10 @@ init([]) ->
 	URI = uri_string:parse(U1),
 	Port = maps:get(port,URI),
 	Dispatch = cowboy_router:compile([
-				                                 {'_', [{"/api/v1/system", restapi_system_command, [ test ]}]}
+				                                 {'_', [
+					                                  {"/api/v1/system", restapi_system_command, [ test ]},
+				                                    {"/api/v1/ws", restapi_ws_handler, []}
+				                                 ]}
 			                                 ]),
 	{ok, Pid} = case application:get_env(utils:get_app_name(),restapi_external_secure,true) of
 							true ->

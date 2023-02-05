@@ -39,27 +39,32 @@ init([]) ->
 	{ok, #state{}}.
 
 handle_call({validate_token,Token}, _From, State) ->
-	{ok,SecurityServices} = microservice:get_service_info(<<"owsec">>),
-	SecurityService = utils:get_first(SecurityServices),
-	#{ <<"privateEndPoint">> := SecurityServiceEndPoint } = SecurityService,
-	#{ <<"key">> := SecurityKey } = SecurityService,
-	{ok,MyServiceInfo} = microservice:get_my_service_info(),
-	#{ <<"publicEndPoint">> := MyPublicName} = MyServiceInfo,
-	Request = { binary_to_list(SecurityServiceEndPoint) ++ "/api/v1/validateToken?token=" ++ binary_to_list(Token),
-		[ {"X-API-KEY" , binary_to_list(SecurityKey) }, {"X-INTERNAL-NAME", binary_to_list(MyPublicName)}]},
-	case httpc:request(get,Request,[],[]) of
-		{ok, {{ _, ReturnCode, _}, _, Body }} ->
-			Answer = jsone:decode(list_to_binary(Body)),
-			case ReturnCode of
-				200 ->
-					#{ <<"userInfo">> := UserInfo } = Answer,
-					#{ <<"email">> := EMail } = UserInfo,
-					{reply, {ok, EMail, UserInfo } , State};
+	case security_token_cache:get_token(Token) of
+		undefined ->
+			{ok,SecurityServices} = microservice:get_service_info(<<"owsec">>),
+			SecurityService = utils:get_first(SecurityServices),
+			#{ <<"privateEndPoint">> := SecurityServiceEndPoint } = SecurityService,
+			#{ <<"key">> := SecurityKey } = SecurityService,
+			{ok,MyServiceInfo} = microservice:get_my_service_info(),
+			#{ <<"publicEndPoint">> := MyPublicName} = MyServiceInfo,
+			Request = { binary_to_list(SecurityServiceEndPoint) ++ "/api/v1/validateToken?token=" ++ binary_to_list(Token),
+				[ {"X-API-KEY" , binary_to_list(SecurityKey) }, {"X-INTERNAL-NAME", binary_to_list(MyPublicName)}]},
+			case httpc:request(get,Request,[],[]) of
+				{ok, {{ _, ReturnCode, _}, _, Body }} ->
+					Answer = jsone:decode(list_to_binary(Body)),
+					case ReturnCode of
+						200 ->
+							#{ <<"userInfo">> := UserInfo } = Answer,
+							#{ <<"email">> := EMail } = UserInfo,
+							{reply, {ok, EMail, UserInfo } , State};
+						_ ->
+							{ reply, {error, ReturnCode}, State}
+					end;
 				_ ->
-					{ reply, {error, ReturnCode}, State}
+					{ reply, {error, 500}, State}
 			end;
-		_ ->
-			{ reply, {error, 500}, State}
+		{EMail,Userinfo} ->
+			{reply, {ok, EMail, Userinfo } , State}
 	end;
 
 handle_call(_Request, _From, State) ->

@@ -103,7 +103,11 @@ handle_call({ delete_pid , Pid}, _From, State = #ws_user_registry_state{}) ->
 	NewUsers = case maps:get(Pid,State#ws_user_registry_state.pid_to_user,undefined) of
 		undefined ->
 			Fun = fun(K,V,Acc) ->
-					maps:put(K,lists:delete(Pid,V),Acc)
+					NewPidList = lists:delete(Pid,V),
+					case length(NewPidList) of
+						0 -> Acc;
+						_ -> maps:put(K,NewPidList,Acc)
+					end
 				end,
 			maps:fold(Fun,#{},State#ws_user_registry_state.user_to_pid);
 		EMail ->

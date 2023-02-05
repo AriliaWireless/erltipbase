@@ -90,6 +90,7 @@ handle_call({ add , EMail, Pid }, _From, State) ->
 		PidList ->
 			maps:put(EMail,PidList ++ Pid,State#ws_user_registry_state.user_to_pid)
 	end,
+	io:format("Newusers: ~p~n", [NewUsers]),
 	{reply, ok, State#ws_user_registry_state{
 		user_to_pid = NewUsers,
 		pid_to_user = maps:put(Pid,EMail,State#ws_user_registry_state.pid_to_user)}};

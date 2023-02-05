@@ -52,13 +52,13 @@ websocket_handle( {binary, Data} , State ) ->
 
 websocket_info({log, Text}, State) ->
 	io:format("Data3: ~p~n", [Text]),
-	{{text, Text}, State};
+	{[{text, Text}], State};
 websocket_info({binary, Text}, State) ->
 	io:format("Data3: ~p~n", [Text]),
-	{{binary, Text}, State};
+	{[{binary, Text}], State};
 websocket_info({text, Text}, State) ->
 	io:format("Data3: ~p~n", [Text]),
-	{{text, Text}, State};
+	{[{text, Text}], State};
 websocket_info(Info, State) ->
 	io:format("Data4: ~p~n", [Info]),
 	{ok, State}.

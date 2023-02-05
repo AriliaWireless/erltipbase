@@ -50,7 +50,7 @@ delete_user(EMail) ->
 delete_pid(Pid) ->
 	gen_server:call(?MODULE, { delete_pid , Pid}).
 
--spec send_frame(EMail::binary(), Frame::{ FrameType :: binary | text , FrameContent::binary()}) -> { ok, NumberOfMessagesSent::integer() }.
+-spec send_frame(EMail::binary(), Frame::{ FrameType :: binary | text , FrameContent::binary()}) -> { ok, NumberOfMessagesSent::integer() }._
 send_frame(Email,Frame) ->
 	gen_server:call(?MODULE, { send_frame , Email, Frame}).
 

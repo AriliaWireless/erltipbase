@@ -56,7 +56,7 @@ init([]) ->
 	Dispatch = cowboy_router:compile([
 				                                 {'_', [
 					                                  {"/api/v1/system", restapi_system_command, [ test ]},
-				                                    {"/api/v1/ws", restapi_ws_handler, []}
+				                                    {"/api/v1/ws", restapi_ws_handler, [ ws_test ]}
 				                                 ]}
 			                                 ]),
 	{ok, Pid} = case application:get_env(utils:get_app_name(),restapi_external_secure,true) of

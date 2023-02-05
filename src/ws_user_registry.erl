@@ -100,24 +100,14 @@ handle_call({ delete_user , EMail}, _From, State = #ws_user_registry_state{}) ->
 	NewPids = maps:filter(Filter, State#ws_user_registry_state.pid_to_user),
 	{reply, ok, State#ws_user_registry_state{ user_to_pid = NewUsers, pid_to_user = NewPids}};
 handle_call({ delete_pid , Pid}, _From, State = #ws_user_registry_state{}) ->
-	NewUsers = case maps:get(Pid,State#ws_user_registry_state.pid_to_user,undefined) of
-		undefined ->
-			Fun = fun(K,V,Acc) ->
-					NewPidList = lists:delete(Pid,V),
-					case length(NewPidList) of
-						0 -> Acc;
-						_ -> maps:put(K,NewPidList,Acc)
-					end
-				end,
-			maps:fold(Fun,#{},State#ws_user_registry_state.user_to_pid);
-		EMail ->
-			case maps:get(EMail,State#ws_user_registry_state.user_to_pid,undefined) of
-				undefined ->
-					State#ws_user_registry_state.user_to_pid;
-				Pids ->
-					maps:put(EMail, lists:delete(Pid,Pids), State#ws_user_registry_state.user_to_pid)
+	FoldingFun = fun(Key,Value,Acc) ->
+			NewPidList = lists:delete(Pid,Value),
+			case length(NewPidList) of
+				0 -> Acc;
+				_ -> maps:put(Key,NewPidList,Acc)
 			end
-	end,
+		end,
+	NewUsers =  maps:fold(FoldingFun, #{}, State#ws_user_registry_state.user_to_pid),
 	NewPids = maps:remove(Pid,State#ws_user_registry_state.pid_to_user),
 	io:format("Delete: ~p~n~p~n",[NewUsers,NewPids]),
 	{reply, ok, State#ws_user_registry_state{ user_to_pid = NewUsers, pid_to_user = NewPids}};

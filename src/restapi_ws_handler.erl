@@ -64,5 +64,5 @@ websocket_info(Info, State) ->
 	{ok, State}.
 
 terminate(_Reason, _PartialReq, _State) ->
-	io:format("Terminating~p"),
+	io:format("Terminating~n"),
 	ok.

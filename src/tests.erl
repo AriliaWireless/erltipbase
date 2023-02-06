@@ -10,7 +10,10 @@
 -author("stephb").
 
 %% API
--export([ws1/0]).
+-export([ws1/0, log1/0]).
 
 ws1() ->
 	ws_user_registry:send_frame(<<"script.runner@arilia.com">>,{text,<<"Hello">>}).
+
+log1() ->
+	logger:info("Test logging").

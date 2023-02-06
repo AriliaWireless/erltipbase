@@ -17,5 +17,6 @@ init([]) ->
 		rest_server_process:creation_info() ++
 		security_sdk:creation_info() ++
 		security_token_cache:creation_info() ++
-		ws_user_registry:creation_info(),
+		ws_user_registry:creation_info() ++
+		main:creation_info(),
 	{ok, {{one_for_one, 1, 5}, Processes}}.

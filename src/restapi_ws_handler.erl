@@ -19,11 +19,11 @@
 }).
 
 init(Req,_State) ->
-	io:format("WS Init~n"),
+%%	io:format("WS Init~n"),
 	{cowboy_websocket, Req, #ws_state{} }.
 
 websocket_init(State) ->
-	io:format("WS Init 2~n"),
+%%	io:format("WS Init 2~n"),
 	{ok, State}.
 
 websocket_handle( {text, <<_T:1/binary, "oken:", Token/binary>>} , #ws_state{ authenticated = false}=State ) ->
@@ -42,9 +42,14 @@ websocket_handle( ping , State ) ->
 websocket_handle( pong , State ) ->
 	io:format("Data: pong~n"),
 	{ok, State};
-websocket_handle( {text, Data} , State ) ->
+websocket_handle( {text, Data} = Frame , State ) ->
 	io:format("Data1: ~p~n", [Data]),
-	{ok, State};
+	case ws_user_registry:process(Frame, State#ws_state.email) of
+		noreply ->
+			{ok,State};
+		{ reply, ResponseFrame} ->
+			{[ResponseFrame],State}
+	end;
 websocket_handle( {binary, Data} , State ) ->
 	io:format("Data2: ~p~n", [ Data]),
 	{ok, State}.
@@ -54,7 +59,7 @@ websocket_info({log, Text}, State) ->
 	{[{text, Text}], State};
 websocket_info({binary, _Text}=Frame, State) ->
 %%	io:format("Data3: ~p~n", [Text]),
-	{[Frame], State};
+	{reply, [Frame], State};
 websocket_info({text, _Text} = Frame, State) ->
 %%	io:format("Data3: ~p~n", [Text]),
 	{[Frame], State};

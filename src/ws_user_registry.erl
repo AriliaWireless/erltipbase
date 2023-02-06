@@ -14,7 +14,8 @@
 %% API
 -export([start_link/0]).
 
--export([creation_info/0, add_user/2, delete_pid/1, delete_user/1, send_frame/2]).
+-export([creation_info/0, add_user/2, delete_pid/1, delete_user/1, send_frame/2, add_callback/2, process/2,
+         send_frame_to_all/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2,
@@ -24,7 +25,9 @@
 
 -record(ws_user_registry_state, {
 	pid_to_user = #{},
-	user_to_pid =#{}
+	user_to_pid =#{},
+	callback_module = undefined,
+	callback_function = undefined
 }).
 
 %%%===================================================================
@@ -37,6 +40,10 @@ creation_info() ->
            shutdown => 100,
            type => worker,
            modules => [?MODULE]} ].
+
+-spec add_callback( Module::atom(), Function::atom() ) -> ok.
+add_callback( Module, Function ) ->
+	gen_server:call(?MODULE, { add_callback , Module, Function }).
 
 -spec add_user( EMail::binary(), WSPid::pid()) -> { ok }.
 add_user(EMail, Pid) ->
@@ -54,11 +61,21 @@ delete_pid(Pid) ->
 send_frame(Email,Frame) ->
 	gen_server:call(?MODULE, { send_frame , Email, Frame}).
 
+-spec send_frame_to_all( Text::binary() ) -> no_return().
+send_frame_to_all( Text ) ->
+	gen_server:cast(?MODULE, {send_frame_to_all, Text}).
+
+-spec process( Frame::{ text | binary , Text::binary()} , EMail::binary()) -> { ok , { text | binary , Text::binary} } |
+{ no_reply }.
+process( Frame , EMail) ->
+	gen_server:call(?MODULE, { process , Frame, EMail}).
+
 %% @doc Spawns the server and registers the local name (unique)
 -spec(start_link() ->
 	{ok, Pid :: pid()} | ignore | {error, Reason :: term()}).
 start_link() ->
 	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -118,6 +135,19 @@ handle_call( {send_frame, EMail, Frame}, _From, State = #ws_user_registry_state{
 			lists:foreach(Fun,PidList),
 			{reply, {ok,length(PidList)}, State}
 	end;
+handle_call( {add_callback, Module, Function}, _From, State = #ws_user_registry_state{}) ->
+	{reply, ok, State#ws_user_registry_state{ callback_module = Module, callback_function = Function}};
+handle_call( {process, Frame, EMail}, _From, State = #ws_user_registry_state{}) ->
+	case State#ws_user_registry_state.callback_module of
+		undefined ->
+			{ reply, no_reply, State};
+		_ ->
+			{
+				reply,
+				apply(State#ws_user_registry_state.callback_module,State#ws_user_registry_state.callback_function,[Frame,EMail]),
+				State
+			}
+	end;
 handle_call(_Request, _From, State = #ws_user_registry_state{}) ->
 	{reply, ok, State}.
 
@@ -127,6 +157,15 @@ handle_call(_Request, _From, State = #ws_user_registry_state{}) ->
 	{noreply, NewState :: #ws_user_registry_state{}} |
 	{noreply, NewState :: #ws_user_registry_state{}, timeout() | hibernate} |
 	{stop, Reason :: term(), NewState :: #ws_user_registry_state{}}).
+handle_cast({send_frame_to_all, Text}, State = #ws_user_registry_state{}) ->
+	PerPidFun = fun (Pid) ->
+			Pid ! { text , Text }
+		end,
+	PerUserFun = fun (_Key,Value) ->
+			lists:foreach(PerPidFun,Value)
+		end,
+	maps:foreach(PerUserFun, State#ws_user_registry_state.user_to_pid),
+	{noreply, State};
 handle_cast(_Request, State = #ws_user_registry_state{}) ->
 	{noreply, State}.
 

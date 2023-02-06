@@ -188,9 +188,10 @@ notifications() {
 		echo "wscat command not found. Cannot start a websocket session."
 	else
 		wscat \
-		--connect "${socket}" "token:${token}" \
- 		--wait $timeout \
- 		--execute "token:${token}"
+		--connect "${socket}" \
+ 		--execute "token:${token}" \
+ 		--wait ${timeout} \
+ 		--slash
 	fi
 }
 

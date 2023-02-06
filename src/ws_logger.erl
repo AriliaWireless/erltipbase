@@ -21,6 +21,7 @@ removing_handler(#{config := #{pid := Pid}}) ->
 	gen_server:stop(Pid).
 
 log(LogEvent,#{config := #{pid := Pid}} = Config) ->
+	io:format("wslogger log~n"),
 	gen_server:cast(Pid, {log, LogEvent, Config}).
 
 init(#{file := File}) ->
@@ -40,4 +41,5 @@ terminate(_Reason, #{fd := Fd}) ->
 
 do_log(_Fd, LogEvent, #{formatter := {FModule, FConfig}}) ->
 	String = FModule:format(LogEvent, FConfig),
+	io:format("wslogger do_log~n"),
 	ws_user_registry:send_frame_to_all(binary:list_to_bin(String)).

@@ -51,6 +51,7 @@ start_link() ->
 init([]) ->
 	ws_user_registry:add_callback(ws_process,process),
 	 E = logger:add_handler(ws_logging,ws_logger,#{}),
+	logger:set_application_level(utils:get_app_name(),debug),
 	io:format("Logger added: ~p~n",[E]),
 	{ok, #main_state{}}.
 

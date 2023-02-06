@@ -41,5 +41,5 @@ terminate(_Reason, #{fd := Fd}) ->
 
 do_log(_Fd, LogEvent, #{formatter := {FModule, FConfig}}) ->
 	String = FModule:format(LogEvent, FConfig),
-	io:format("wslogger do_log~n"),
+	io:format("wslogger do_log: ~p~n",[String]),
 	ws_user_registry:send_frame_to_all(binary:list_to_bin(String)).

@@ -16,4 +16,7 @@ ws1() ->
 	ws_user_registry:send_frame(<<"script.runner@arilia.com">>,{text,<<"Hello">>}).
 
 log1() ->
-	logger:error("Test logging").
+	logger:error("Test error logging"),
+	logger:debug("Test debug logging"),
+	logger:notice("Test notice logging"),
+	logger:info("Test information logging").

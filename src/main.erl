@@ -50,7 +50,8 @@ start_link() ->
 	{stop, Reason :: term()} | ignore).
 init([]) ->
 	ws_user_registry:add_callback(ws_process,process),
-	logger:add_handler(ws_logging,ws_logger,#{}),
+	 E = logger:add_handler(ws_logging,ws_logger,#{}),
+	io:format("Logger added: ~p~n",[E]),
 	{ok, #main_state{}}.
 
 %% @private

@@ -68,6 +68,6 @@ websocket_info(Info, State) ->
 	{ok, State}.
 
 terminate(_Reason, _PartialReq, _State) ->
-	io:format("Terminating~n"),
+	%% io:format("Terminating~n"),
 	ws_user_registry:delete_pid(self()),
 	ok.

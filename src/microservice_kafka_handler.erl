@@ -1,10 +1,12 @@
 -module(microservice_kafka_handler).
--include_lib("brod/include/brod.hrl"). %% needed for the #kafka_message record definition
+%% needed for the #kafka_message record definition
+-include("deps/brod/include/brod.hrl").
 
 -behaviour(brod_topic_subscriber).
 
 -export([start/1]).
--export([init/2, handle_message/4, handle_message/3, send_message/3, creation_info/0]). %% callback api
+%% callback api
+-export([init/2, handle_message/4, handle_message/3, send_message/3, creation_info/0]).
 
 -record(state, {
 	  offset_dir   :: string(),

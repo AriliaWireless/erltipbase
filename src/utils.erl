@@ -1,7 +1,8 @@
 -module(utils).
-
+-include_lib("public_key/include/public_key.hrl").
 -export([to_hex/1,get_first/1, set_app_name/1, get_app_name/0]).
 -export([number_of_cpus/0]).
+-export([certificate_expiry/1]).
 
 to_hex_digit(D) ->
 	case D>9 of
@@ -37,3 +38,18 @@ get_app_name() ->
 -spec number_of_cpus() -> integer().
 number_of_cpus() ->
 	length(cpu_sup:util([detailed,per_cpu])).
+
+-spec certificate_expiry(Filename::binary()) -> integer().
+certificate_expiry(FileName) ->
+	{ok,PemBin} = file:read_file(FileName),
+	[RawCert] = public_key:pem_decode(PemBin),
+	Cert = public_key:pem_entry_decode(RawCert),
+	{utcTime, T} = Cert#'Certificate'.tbsCertificate#'TBSCertificate'.validity#'Validity'.notAfter,
+	UTC = {{2000+list_to_integer(string:sub_string(T,1,2)),
+	        list_to_integer(string:sub_string(T,3,4)),
+	        list_to_integer(string:sub_string(T,5,6))},
+	       {list_to_integer(string:sub_string(T,7,8)),
+	        list_to_integer(string:sub_string(T,9,10)),
+	        list_to_integer(string:sub_string(T,11,12))}},
+	date_util:datetime_to_epoch(UTC).
+

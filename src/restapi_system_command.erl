@@ -107,14 +107,19 @@ from_json(Req, State) ->
 -spec to_json(Req :: request_data(), State :: request_state()) -> request_answer().
 to_json(Req, #call_state{method = <<"GET">>, command= <<"info">>} = State) ->
 	%% io:format("to_json called GET info:~n"),
+	{ok,Info} = microservice:get_my_service_info(),
+	#{<<"version">> := Version} = Info,
+	{ok,CertFileName} = application:get_env(utils:get_app_name(),restapi_external_cert),
+	AbsCertFileName = code:priv_dir(utils:get_app_name()) + CertFileName,
+	CertInfo = #{ filename => CertFileName, expiresOn => utils:certificate_expiry(AbsCertFileName) },
 	Answer = #{
-		version => <<"1.0">>,
+		version => Version,
 		hostname => list_to_binary(net_adm:localhost()),
 		uptime =>  State#call_state.session_time - persistent_term:get(microservice_start_time),
 		start => persistent_term:get(microservice_start_time),
 		processors => utils:number_of_cpus(),
-		certificates => [],
-		os => <<"Erlang 25.2">>,
+		certificates => [ CertInfo ],
+		os => list_to_binary(erlang:system_info(version)),
 		erlangnode => node()
 	},
 	{jsone:encode(Answer), Req, State};
